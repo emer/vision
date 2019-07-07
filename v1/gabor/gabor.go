@@ -1,0 +1,133 @@
+// Copyright (c) 2019, The Emergent Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+/*
+package gabor provides a gabor filter for visual and other
+forms of signal processing
+*/
+package gabor
+
+import (
+	"math"
+
+	"github.com/chewxy/math32"
+	"github.com/emer/etable/etable"
+	"github.com/emer/etable/etensor"
+	"github.com/goki/gi/mat32"
+)
+
+// gabor.Filter specifies a gabor filter function,
+// i.e., a 2d Gaussian envelope times a sinusoidal plane wave.
+// By default it produces 2 phase asymmetric edge detector filters.
+type Filter struct {
+	On         bool    `desc:"is this filter active?"`
+	Wt         float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
+	Gain       float32 `viewif:"On" def:"2" desc:"overall gain multiplier applied after gabor filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
+	Size       int     `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
+	Spacing    int     `viewif:"On" desc:"how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
+	WvLen      float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place (computation adds a 2 PI factor to translate into pixels instead of radians)"`
+	SigLen     float32 `viewif:"On" def:"0.3" desc:"gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size"`
+	SigWd      float32 `viewif:"On" def:"0.15;0.2" desc:"gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size"`
+	Phase      float32 `viewif:"On" def:"0,90" desc:"phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave"`
+	CircleEdge bool    `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
+	NAngles    int     `viewif:"On" def:"4" desc:"number of different angles of overall gabor filter orientation to use -- first angle is always horizontal"`
+}
+
+func (gf *Filter) Defaults() {
+	gf.On = true
+	gf.Wt = 1
+	gf.Gain = 2
+	gf.Size = 6
+	gf.Spacing = 2
+	gf.WvLen = 6
+	gf.SigLen = 0.3
+	gf.SigWd = 0.2
+	gf.Phase = 0
+	gf.CircleEdge = true
+	gf.NAngles = 4
+}
+
+func (gf *Filter) Update() {
+
+}
+
+// ToTensor renders filters into the given etable etensor.Tensor,
+// setting dimensions to [angle][Y][X] where Y = X = Size
+func (gf *Filter) ToTensor(tsr etensor.Tensor) {
+	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, nil, []string{"Angles", "Y", "X"})
+
+	ctr := 0.5 * float32(gf.Size-1)
+	angInc := math.Pi / float32(gf.NAngles)
+
+	radius := float32(gf.Size) * 0.5
+
+	gsLen := gf.SigLen * float32(gf.Size)
+	gsWd := gf.SigWd * float32(gf.Size)
+
+	lenNorm := 1.0 / (2.0 * gsLen * gsLen)
+	wdNorm := 1.0 / (2.0 * gsWd * gsWd)
+
+	twoPiNorm := (2.0 * math.Pi) / gf.WvLen
+	phsRad := mat32.DegToRad(gf.Phase)
+
+	for ang := 0; ang < gf.NAngles; ang++ {
+		angf := -float32(ang) * angInc
+
+		posSum := float32(0)
+		negSum := float32(0)
+		for x := 0; x < gf.Size; x++ {
+			for y := 0; y < gf.Size; y++ {
+				xf := float32(x) - ctr
+				yf := float32(y) - ctr
+
+				dist := math32.Hypot(xf, yf)
+				val := float32(0)
+				if !(gf.CircleEdge && (dist > radius)) {
+					nx := xf*math32.Cos(angf) - yf*math32.Sin(angf)
+					ny := yf*math32.Cos(angf) + xf*math32.Sin(angf)
+					gauss := math32.Exp(-(lenNorm*(nx*nx) + wdNorm*(ny*ny)))
+					sin := math32.Sin(twoPiNorm*ny + phsRad)
+					val = gauss * sin
+					if val > 0 {
+						posSum += val
+					} else if val < 0 {
+						negSum += val
+					}
+				}
+				tsr.SetFloat([]int{ang, y, x}, float64(val))
+			}
+		}
+		// renorm each half
+		posNorm := float32(1) / posSum
+		negNorm := float32(1) / negSum
+		for x := 0; x < gf.Size; x++ {
+			for y := 0; y < gf.Size; y++ {
+				val := float32(tsr.FloatVal([]int{ang, y, x}))
+				if val > 0 {
+					val *= posNorm
+				} else if val < 0 {
+					val *= negNorm
+				}
+				tsr.SetFloat([]int{ang, y, x}, float64(val))
+			}
+		}
+	}
+}
+
+// ToTable renders filters into the given etable.Table
+// setting a column named Angle to the angle and
+// a column named Gabor to the filter for that angle.
+// This is useful for display and validation purposes.
+func (gf *Filter) ToTable(tab *etable.Table) {
+	tab.SetFromSchema(etable.Schema{
+		{"Angle", etensor.FLOAT32, nil, nil},
+		{"Filter", etensor.FLOAT32, []int{gf.NAngles, gf.Size, gf.Size}, []string{"Angle", "Y", "X"}},
+	}, gf.NAngles)
+	gf.ToTensor(tab.Cols[1])
+	angInc := math.Pi / float32(gf.NAngles)
+	for ang := 0; ang < gf.NAngles; ang++ {
+		angf := mat32.RadToDeg(-float32(ang) * angInc)
+		tab.SetCellFloatIdx(0, ang, float64(angf))
+	}
+}
