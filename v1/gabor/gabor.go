@@ -54,7 +54,7 @@ func (gf *Filter) Update() {
 
 // ToTensor renders filters into the given etable etensor.Tensor,
 // setting dimensions to [angle][Y][X] where Y = X = Size
-func (gf *Filter) ToTensor(tsr etensor.Tensor) {
+func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, nil, []string{"Angles", "Y", "X"})
 
 	ctr := 0.5 * float32(gf.Size-1)
@@ -95,7 +95,7 @@ func (gf *Filter) ToTensor(tsr etensor.Tensor) {
 						negSum += val
 					}
 				}
-				tsr.SetFloat([]int{ang, y, x}, float64(val))
+				tsr.Set([]int{ang, y, x}, val)
 			}
 		}
 		// renorm each half
@@ -103,13 +103,13 @@ func (gf *Filter) ToTensor(tsr etensor.Tensor) {
 		negNorm := float32(1) / negSum
 		for x := 0; x < gf.Size; x++ {
 			for y := 0; y < gf.Size; y++ {
-				val := float32(tsr.FloatVal([]int{ang, y, x}))
+				val := tsr.Value([]int{ang, y, x})
 				if val > 0 {
 					val *= posNorm
 				} else if val < 0 {
 					val *= negNorm
 				}
-				tsr.SetFloat([]int{ang, y, x}, float64(val))
+				tsr.Set([]int{ang, y, x}, val)
 			}
 		}
 	}
@@ -124,7 +124,7 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 		{"Angle", etensor.FLOAT32, nil, nil},
 		{"Filter", etensor.FLOAT32, []int{gf.NAngles, gf.Size, gf.Size}, []string{"Angle", "Y", "X"}},
 	}, gf.NAngles)
-	gf.ToTensor(tab.Cols[1])
+	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := mat32.RadToDeg(-float32(ang) * angInc)
