@@ -45,10 +45,11 @@ func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32) {
 // ConvFlt performs convolution using given filter over entire image
 func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img, out *etensor.Float32) {
 	fst := fno * int(geom.FiltSz.Y) * int(geom.FiltSz.X)
+	ist := geom.Border.Sub(geom.FiltLt)
 	for y := 0; y < int(geom.Out.Y); y++ {
-		iy := int(geom.Border.Y + int32(y)*geom.Spacing.Y)
+		iy := int(ist.Y + int32(y)*geom.Spacing.Y)
 		for x := 0; x < int(geom.Out.X); x++ {
-			ix := int(geom.Border.X + int32(x)*geom.Spacing.X)
+			ix := int(ist.X + int32(x)*geom.Spacing.X)
 			sum := float32(0)
 			fi := 0
 			for fy := 0; fy < int(geom.FiltSz.Y); fy++ {

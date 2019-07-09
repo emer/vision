@@ -49,6 +49,6 @@ func (ge *Geom) UpdtFilt() {
 // SetSize sets the input size, and computes output from that.
 func (ge *Geom) SetSize(inSize mat32.Vec2i) {
 	ge.In = inSize
-	av := ge.In.Sub(ge.Border)
+	av := ge.In.Sub(ge.Border.MulScalar(2))
 	ge.Out = av.Div(ge.Spacing)
 }
