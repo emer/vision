@@ -43,6 +43,7 @@ func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32) {
 }
 
 // ConvFlt performs convolution using given filter over entire image
+// This is called by Conv using different parallel goroutines
 func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img, out *etensor.Float32) {
 	fst := fno * int(geom.FiltSz.Y) * int(geom.FiltSz.X)
 	ist := geom.Border.Sub(geom.FiltLt)

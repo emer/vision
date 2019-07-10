@@ -25,8 +25,8 @@ type Filter struct {
 	Wt         float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
 	Gain       float32 `viewif:"On" def:"2" desc:"overall gain multiplier applied after gabor filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
 	Size       int     `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
+	WvLen      float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)"`
 	Spacing    int     `viewif:"On" desc:"how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
-	WvLen      float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place (computation adds a 2 PI factor to translate into pixels instead of radians)"`
 	SigLen     float32 `viewif:"On" def:"0.3" desc:"gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size"`
 	SigWd      float32 `viewif:"On" def:"0.15;0.2" desc:"gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size"`
 	Phase      float32 `viewif:"On" def:"0,90" desc:"phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave"`
@@ -49,7 +49,14 @@ func (gf *Filter) Defaults() {
 }
 
 func (gf *Filter) Update() {
+}
 
+// SetSize sets the size and WvLen to same value, and also sets spacing
+// these are the main params that need to be varied for standard V1 gabors
+func (gf *Filter) SetSize(sz, spc int) {
+	gf.Size = sz
+	gf.WvLen = float32(sz)
+	gf.Spacing = spc
 }
 
 // ToTensor renders filters into the given etable etensor.Tensor,
@@ -92,7 +99,7 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 					if val > 0 {
 						posSum += val
 					} else if val < 0 {
-						negSum += val
+						negSum += -val
 					}
 				}
 				tsr.Set([]int{ang, y, x}, val)
@@ -128,6 +135,6 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := mat32.RadToDeg(-float32(ang) * angInc)
-		tab.SetCellFloatIdx(0, ang, float64(angf))
+		tab.SetCellFloatIdx(0, ang, float64(-angf))
 	}
 }
