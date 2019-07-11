@@ -30,7 +30,7 @@ func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32) {
 
 	imgSz := mat32.Vec2i{int32(img.Dim(1)), int32(img.Dim(0))}
 	geom.SetSize(imgSz)
-	oshp := []int{nf, 2, int(geom.Out.Y), int(geom.Out.X)}
+	oshp := []int{int(geom.Out.Y), int(geom.Out.X), 2, nf}
 	if !etensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"Filter", "Pol", "Y", "X"})
 	}
@@ -62,11 +62,11 @@ func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img,
 				}
 			}
 			if sum > 0 {
-				out.Set([]int{fno, 0, y, x}, sum)
-				out.Set([]int{fno, 1, y, x}, float32(0))
+				out.Set([]int{y, x, 0, fno}, sum)
+				out.Set([]int{y, x, 1, fno}, float32(0))
 			} else {
-				out.Set([]int{fno, 0, y, x}, float32(0))
-				out.Set([]int{fno, 1, y, x}, sum)
+				out.Set([]int{y, x, 0, fno}, float32(0))
+				out.Set([]int{y, x, 1, fno}, -sum)
 			}
 		}
 	}

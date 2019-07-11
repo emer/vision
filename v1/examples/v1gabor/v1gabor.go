@@ -47,7 +47,8 @@ func (vi *Vis) Defaults() {
 	spc := int32(4)
 	vi.V1sGabor.SetSize(int(sz), int(spc))
 	vi.V1sGeom.Set(mat32.Vec2i{0, 0}, mat32.Vec2i{spc, spc}, mat32.Vec2i{sz, sz})
-	vi.ImgSize = image.Point{128, 128}
+	// vi.ImgSize = image.Point{128, 128}
+	vi.ImgSize = image.Point{64, 64}
 	vi.V1sGaborTsr = &etensor.Float32{}
 	vi.V1sGabor.ToTensor(vi.V1sGaborTsr)
 	vi.V1sGaborTab = &etable.Table{}
