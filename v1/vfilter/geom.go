@@ -4,21 +4,21 @@
 
 package vfilter
 
-import "github.com/goki/gi/mat32"
+import "image"
 
 // Geom contains the filtering geometry info for a given filter pass.
 type Geom struct {
-	In      mat32.Vec2i `desc:"size of input -- computed from image or set"`
-	Out     mat32.Vec2i `desc:"size of output -- computed"`
-	Border  mat32.Vec2i `desc:"starting border into image -- must be >= FiltRt"`
-	Spacing mat32.Vec2i `desc:"spacing -- number of pixels to skip in each direction"`
-	FiltSz  mat32.Vec2i `desc:"full size of filter"`
-	FiltLt  mat32.Vec2i `desc:"computed size of left/top size of filter"`
-	FiltRt  mat32.Vec2i `desc:"computed size of right/bottom size of filter (FiltSz - FiltLeft)"`
+	In      image.Point `desc:"size of input -- computed from image or set"`
+	Out     image.Point `desc:"size of output -- computed"`
+	Border  image.Point `desc:"starting border into image -- must be >= FiltRt"`
+	Spacing image.Point `desc:"spacing -- number of pixels to skip in each direction"`
+	FiltSz  image.Point `desc:"full size of filter"`
+	FiltLt  image.Point `desc:"computed size of left/top size of filter"`
+	FiltRt  image.Point `desc:"computed size of right/bottom size of filter (FiltSz - FiltLeft)"`
 }
 
 // Set sets the basic geometry params
-func (ge *Geom) Set(border, spacing, filtSz mat32.Vec2i) {
+func (ge *Geom) Set(border, spacing, filtSz image.Point) {
 	ge.Border = border
 	ge.Spacing = spacing
 	ge.FiltSz = filtSz
@@ -26,7 +26,7 @@ func (ge *Geom) Set(border, spacing, filtSz mat32.Vec2i) {
 }
 
 // LeftHalf returns the left / top half of a filter
-func LeftHalf(x int32) int32 {
+func LeftHalf(x int) int {
 	if x%2 == 0 {
 		return x / 2
 	}
@@ -47,8 +47,11 @@ func (ge *Geom) UpdtFilt() {
 }
 
 // SetSize sets the input size, and computes output from that.
-func (ge *Geom) SetSize(inSize mat32.Vec2i) {
+func (ge *Geom) SetSize(inSize image.Point) {
 	ge.In = inSize
-	av := ge.In.Sub(ge.Border.MulScalar(2))
-	ge.Out = av.Div(ge.Spacing)
+	b2 := ge.Border
+	b2.X *= 2
+	b2.Y *= 2
+	av := ge.In.Sub(b2)
+	ge.Out = av.Div(ge.Spacing.X) // only 1
 }

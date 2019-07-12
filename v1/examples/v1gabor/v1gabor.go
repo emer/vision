@@ -17,7 +17,6 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/giv"
-	"github.com/goki/gi/mat32"
 )
 
 // this is the stub main for gogi that calls our actual
@@ -31,28 +30,30 @@ func main() {
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
 type Vis struct {
-	V1sGabor    gabor.Filter     `desc:"V1 simple gabor filter parameters"`
-	V1sGeom     vfilter.Geom     `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
-	ImgSize     image.Point      `desc:"target image size to use -- images will be rescaled to this size"`
-	V1sGaborTsr *etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter tensor"`
-	V1sGaborTab *etable.Table    `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
-	Img         image.Image      `view:"-" desc:"current input image"`
-	ImgTsr      *etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
-	V1sTsr      *etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
+	V1sGabor    gabor.Filter    `desc:"V1 simple gabor filter parameters"`
+	V1sGeom     vfilter.Geom    `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
+	ImgSize     image.Point     `desc:"target image size to use -- images will be rescaled to this size"`
+	V1sGaborTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter tensor"`
+	V1sGaborTab etable.Table    `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
+	Img         image.Image     `view:"-" desc:"current input image"`
+	ImgTsr      etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
+	V1sTsr      etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
+	V1sPoolTsr  etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 tensor"`
 }
 
 func (vi *Vis) Defaults() {
 	vi.V1sGabor.Defaults()
-	sz := int32(12) // V1mF16 typically = 12, no border
-	spc := int32(4)
-	vi.V1sGabor.SetSize(int(sz), int(spc))
-	vi.V1sGeom.Set(mat32.Vec2i{0, 0}, mat32.Vec2i{spc, spc}, mat32.Vec2i{sz, sz})
-	// vi.ImgSize = image.Point{128, 128}
-	vi.ImgSize = image.Point{64, 64}
-	vi.V1sGaborTsr = &etensor.Float32{}
-	vi.V1sGabor.ToTensor(vi.V1sGaborTsr)
-	vi.V1sGaborTab = &etable.Table{}
-	vi.V1sGabor.ToTable(vi.V1sGaborTab) // note: view only, testing
+	sz := 12 // V1mF16 typically = 12, no border
+	spc := 4
+	vi.V1sGabor.SetSize(sz, spc)
+	// note: first arg is border -- we are relying on Geom
+	// to set border to .5 * filter size
+	// any further border sizes on same image need to add Geom.FiltRt!
+	vi.V1sGeom.Set(image.Point{0, 0}, image.Point{spc, spc}, image.Point{sz, sz})
+	vi.ImgSize = image.Point{128, 128}
+	// vi.ImgSize = image.Point{64, 64}
+	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
+	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
 }
 
 // OpenImage opens given filename as current image Img
@@ -68,21 +69,17 @@ func (vi *Vis) OpenImage(filepath string) error {
 	if isz != vi.ImgSize {
 		vi.Img = transform.Resize(vi.Img, vi.ImgSize.X, vi.ImgSize.Y, transform.Linear)
 	}
-	if vi.ImgTsr == nil {
-		vi.ImgTsr = &etensor.Float32{}
-	}
-	vfilter.RGBToGrey(vi.Img, vi.ImgTsr, 6) // 6 = pad 6 blank
-	vfilter.WrapPad(vi.ImgTsr, 6)
+	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.V1sGeom.FiltRt.X) // pad for filt
+	vfilter.WrapPad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
 	return nil
 }
 
 // V1Simple runs V1Simple Gabor filtering on input image
-// must have valid Img in place to start
+// must have valid Img in place to start.
+// Then runs MaxPool pooling into V1poolTsr
 func (vi *Vis) V1Simple() {
-	if vi.V1sTsr == nil {
-		vi.V1sTsr = &etensor.Float32{}
-	}
-	vfilter.Conv(&vi.V1sGeom, vi.V1sGaborTsr, vi.ImgTsr, vi.V1sTsr)
+	vfilter.Conv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgTsr, &vi.V1sTsr)
+	vfilter.MaxPool(image.Point{2, 2}, &vi.V1sTsr, &vi.V1sPoolTsr)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,6 +126,7 @@ var TheVis Vis
 func mainrun() {
 	TheVis.Defaults()
 	err := TheVis.OpenImage("img_0001_p00_005_tablelamp_007_tick_5_sac_1.jpg")
+	//	err := TheVis.OpenImage("img_0001_p00_005_tablelamp_007_tick_5_sac_1_crop.jpg")
 	if err != nil {
 		return
 	}
