@@ -29,4 +29,45 @@ func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int) {
 	}
 }
 
-// todo: wrap pad, blend pad etc methods for padding.
+// WrapPad wraps given padding width of float32 image around sides
+func WrapPad(tsr *etensor.Float32, padWidth int) {
+	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+	usz := sz
+	usz.Y -= padWidth
+	usz.X -= padWidth
+	for y := 0; y < sz.Y; y++ {
+		sy := y
+		if y < padWidth {
+			sy = usz.Y - 1 - y
+		} else if y >= usz.Y {
+			sy = padWidth + (y - usz.Y)
+		}
+		for x := 0; x < padWidth; x++ {
+			wv := tsr.Value([]int{sy, usz.X - 1 - x})
+			// testing only:
+			// wv *= float32(x) / float32(padWidth)
+			// tsr.Set([]int{sy, usz.X - 1 - x}, wv)
+			tsr.Set([]int{y, x}, wv)
+		}
+		for x := usz.X; x < sz.X; x++ {
+			wv := tsr.Value([]int{sy, padWidth + (x - usz.X)})
+			tsr.Set([]int{y, x}, wv)
+		}
+	}
+	for x := 0; x < sz.X; x++ {
+		sx := x
+		if x < padWidth {
+			sx = usz.X - 1 - x
+		} else if x >= usz.X {
+			sx = padWidth + (x - usz.X)
+		}
+		for y := 0; y < padWidth; y++ {
+			wv := tsr.Value([]int{usz.Y - 1 - y, sx})
+			tsr.Set([]int{y, x}, wv)
+		}
+		for y := usz.Y; y < sz.Y; y++ {
+			wv := tsr.Value([]int{padWidth + (y - usz.Y)})
+			tsr.Set([]int{y, x}, wv)
+		}
+	}
+}

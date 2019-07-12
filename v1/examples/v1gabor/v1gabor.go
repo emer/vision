@@ -32,7 +32,7 @@ func main() {
 // use in a given case -- can add / modify this as needed
 type Vis struct {
 	V1sGabor    gabor.Filter     `desc:"V1 simple gabor filter parameters"`
-	V1sGeom     vfilter.Geom     `inactive:"+" desc:"geometry of input, output for V1 simple-cell processing"`
+	V1sGeom     vfilter.Geom     `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
 	ImgSize     image.Point      `desc:"target image size to use -- images will be rescaled to this size"`
 	V1sGaborTsr *etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter tensor"`
 	V1sGaborTab *etable.Table    `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
@@ -71,7 +71,8 @@ func (vi *Vis) OpenImage(filepath string) error {
 	if vi.ImgTsr == nil {
 		vi.ImgTsr = &etensor.Float32{}
 	}
-	vfilter.RGBToGrey(vi.Img, vi.ImgTsr, 0) // no padding
+	vfilter.RGBToGrey(vi.Img, vi.ImgTsr, 6) // 6 = pad 6 blank
+	vfilter.WrapPad(vi.ImgTsr, 6)
 	return nil
 }
 
