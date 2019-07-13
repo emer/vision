@@ -76,7 +76,7 @@ func (vi *Vis) OpenImage(filepath string) error {
 
 // V1Simple runs V1Simple Gabor filtering on input image
 // must have valid Img in place to start.
-// Then runs MaxPool pooling into V1poolTsr
+// Then runs MaxPool pooling into V1poolTsr.
 func (vi *Vis) V1Simple() {
 	vfilter.Conv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgTsr, &vi.V1sTsr)
 	vfilter.MaxPool(image.Point{2, 2}, &vi.V1sTsr, &vi.V1sPoolTsr)
