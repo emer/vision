@@ -12,9 +12,9 @@ import (
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
 	_ "github.com/emer/etable/etview" // include to get gui views
+	"github.com/emer/vision/gabor"
 	"github.com/emer/vision/kwta"
-	"github.com/emer/vision/v1/gabor"
-	"github.com/emer/vision/v1/vfilter"
+	"github.com/emer/vision/vfilter"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/giv"
