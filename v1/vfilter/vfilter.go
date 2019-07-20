@@ -22,7 +22,7 @@ import (
 // Out shape dims are: Y, X, Polarity (2), Angle
 // where the 2 polarities (on, off) are for positive and and
 // negative filter values, respectively.
-func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32) {
+func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
 	nf := flt.Dim(0)
 	fy := flt.Dim(1)
 	fx := flt.Dim(2)
@@ -39,14 +39,14 @@ func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32) {
 	var wg sync.WaitGroup
 	for f := 0; f < nf; f++ {
 		wg.Add(1)
-		go ConvFlt(&wg, geom, f, flt, img, out)
+		go ConvFlt(&wg, geom, f, flt, img, out, gain)
 	}
 	wg.Wait()
 }
 
 // ConvFlt performs convolution using given filter over entire image
 // This is called by Conv using different parallel goroutines
-func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img, out *etensor.Float32) {
+func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
 	fst := fno * int(geom.FiltSz.Y) * int(geom.FiltSz.X)
 	ist := geom.Border.Sub(geom.FiltLt)
 	for y := 0; y < geom.Out.Y; y++ {
@@ -63,6 +63,7 @@ func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno int, flt *etensor.Float32, img,
 					fi++
 				}
 			}
+			sum *= gain
 			if sum > 0 {
 				out.Set([]int{y, x, 0, fno}, sum)
 				out.Set([]int{y, x, 1, fno}, float32(0))

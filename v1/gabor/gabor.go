@@ -28,7 +28,7 @@ type Filter struct {
 	WvLen      float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)"`
 	Spacing    int     `viewif:"On" desc:"how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
 	SigLen     float32 `viewif:"On" def:"0.3" desc:"gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size"`
-	SigWd      float32 `viewif:"On" def:"0.15;0.2" desc:"gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size"`
+	SigWd      float32 `viewif:"On" def:"0.15,0.2" desc:"gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size"`
 	Phase      float32 `viewif:"On" def:"0,90" desc:"phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave"`
 	CircleEdge bool    `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
 	NAngles    int     `viewif:"On" def:"4" desc:"number of different angles of overall gabor filter orientation to use -- first angle is always horizontal"`

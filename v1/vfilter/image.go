@@ -13,13 +13,20 @@ import (
 
 // RGBToGrey converts an RGB input image to a greyscale etensor
 // in preparation for processing.
-// padWidth is the amount of padding to add on all sides
-func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int) {
+// padWidth is the amount of padding to add on all sides.
+// topZero retains the Y=0 value at the top of the tensor --
+// otherwise it is flipped with Y=0 at the bottom to be consistent
+// with the emergent / OpenGL standard coordinate system
+func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
 	sz := img.Bounds().Size()
 	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"Y", "X"})
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
-			cv := img.At(x, y)
+			sy := y
+			if !topZero {
+				sy = (sz.Y - 1) - y
+			}
+			cv := img.At(x, sy)
 			var cl gi.Color
 			cl.SetColor(cv)
 			r, g, b, _ := cl.ToFloat32()

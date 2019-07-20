@@ -56,8 +56,8 @@ type XX1Params struct {
 
 func (xp *XX1Params) Defaults() {
 	xp.Thr = 0.5
-	xp.Gain = 100
-	xp.NVar = 0.005
+	xp.Gain = 80   // 100 std for nets
+	xp.NVar = 0.01 // 0.005 std for nets
 	xp.ActTau = 3.0
 	xp.SigMult = 0.33
 	xp.SigMultPow = 0.8
