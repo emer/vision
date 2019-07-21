@@ -85,7 +85,7 @@ func (vi *Vis) OpenImage(filepath string) error {
 func (vi *Vis) V1Simple() {
 	vfilter.Conv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgTsr, &vi.V1sTsr, vi.V1sGabor.Gain)
 	vi.V1sKWTA.KWTAPool(&vi.V1sTsr, &vi.V1sKwtaTsr, &vi.V1sInhibs)
-	vfilter.MaxPool(image.Point{2, 2}, &vi.V1sKwtaTsr, &vi.V1sPoolTsr)
+	vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sKwtaTsr, &vi.V1sPoolTsr)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
