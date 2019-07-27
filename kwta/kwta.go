@@ -5,9 +5,12 @@
 package kwta
 
 import (
+	"log"
+
 	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/minmax"
+	"github.com/goki/gi/mat32"
 )
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -95,7 +98,8 @@ func (fb *FFFBParams) Inhib(avgGe, maxGe, avgAct float32, inh *FFFBInhib) {
 // k-Winner-Take-All behavior.
 type KWTA struct {
 	On         bool       `desc:"whether to run kWTA or not"`
-	Iters      int        `desc:"number of iterations to perform"`
+	Iters      int        `desc:"maximum number of iterations to perform"`
+	DelActThr  float32    `def:"0.005" desc:"threshold on delta-activation (change in activation) for stopping updating of activations"`
 	LayFFFB    FFFBParams `desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
 	PoolFFFB   FFFBParams `desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
 	XX1        XX1Params  `view:"inline" desc:"X/X+1 rate code activation function parameters"`
@@ -108,6 +112,7 @@ type KWTA struct {
 func (kwta *KWTA) Defaults() {
 	kwta.On = true
 	kwta.Iters = 20
+	kwta.DelActThr = 0.005
 	kwta.LayFFFB.Defaults()
 	kwta.PoolFFFB.Defaults()
 	kwta.PoolFFFB.Gi = 2.0
@@ -132,22 +137,31 @@ func (kwta *KWTA) GeThrFmG(gi float32) float32 {
 }
 
 // ActFmG computes rate-coded activation Act from conductances Ge and Gi
-func (kwta *KWTA) ActFmG(geThr, ge, act float32) float32 {
-	nwAct := kwta.XX1.NoisyXX1(ge*kwta.Gbar.E - geThr)
-	nwAct = act + kwta.XX1.ActDt*(nwAct-act)
-	return nwAct
+func (kwta *KWTA) ActFmG(geThr, ge, act float32) (nwAct, delAct float32) {
+	nwAct = kwta.XX1.NoisyXX1(ge*kwta.Gbar.E - geThr)
+	delAct = kwta.XX1.ActDt * (nwAct - act)
+	nwAct = act + delAct
+	return nwAct, delAct
 }
 
 // KWTALayer computes k-Winner-Take-All activation values from raw inputs.
 // act output tensor is set to same shape as raw inputs if not already.
 // This version just computes a "layer" level of inhibition across the
 // entire set of tensor values.
-func (kwta *KWTA) KWTALayer(raw, act *etensor.Float32) {
+// extGi is extra / external Gi inhibition per unit
+// -- e.g. from neighbor inhib -- must be size of raw, act.
+func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 	inhib := FFFBInhib{}
 	raws := raw.Values // these are ge
 
 	if !act.Shape.IsEqual(&raw.Shape) {
 		act.SetShape(raw.Shape.Shp, raw.Shape.Strd, raw.Shape.Nms)
+	}
+	if extGi != nil {
+		if !extGi.Shape.IsEqual(&raw.Shape) {
+			log.Println("KWTALayer: extGi is not correct shape, will not be used!")
+			extGi = nil
+		}
 	}
 
 	acts := act.Values
@@ -160,15 +174,24 @@ func (kwta *KWTA) KWTALayer(raw, act *etensor.Float32) {
 
 	for cy := 0; cy < kwta.Iters; cy++ {
 		kwta.LayFFFB.Inhib(inhib.AvgMaxGe.Avg, inhib.AvgMaxGe.Max, inhib.AvgMaxAct.Avg, &inhib)
-		geThr := kwta.GeThrFmG(inhib.Gi)
 		inhib.AvgMaxAct.Init()
+		maxDelAct := float32(0)
 		for i := range acts {
+			gi := inhib.Gi
+			if extGi != nil {
+				gi += extGi.Values[i]
+			}
+			geThr := kwta.GeThrFmG(gi)
 			ge := raws[i]
-			nwAct := kwta.ActFmG(geThr, ge, acts[i])
+			nwAct, delAct := kwta.ActFmG(geThr, ge, acts[i])
+			maxDelAct = math32.Max(maxDelAct, mat32.Abs(delAct))
 			inhib.AvgMaxAct.UpdateVal(nwAct, i)
 			acts[i] = nwAct
 		}
 		inhib.AvgMaxAct.CalcAvg()
+		if cy > 2 && maxDelAct < kwta.DelActThr {
+			break
+		}
 	}
 }
 
@@ -178,15 +201,23 @@ func (kwta *KWTA) KWTALayer(raw, act *etensor.Float32) {
 // inibition -- tensors must be 4 dimensional -- outer 2D is Y, X Layer
 // and inner 2D are features (pools) per location.
 // The inhib slice is required for pool-level inhibition and will
-// be automatically sized if not big enough -- for best performance
-// store this and reuse to avoid memory allocations.
-func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib) {
+// be automatically sized to outer X,Y dims if not big enough.
+// For best performance store this and reuse to avoid memory allocations.
+// extGi is extra / external Gi inhibition per unit
+// -- e.g. from neighbor inhib -- must be size of raw, act.
+func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib, extGi *etensor.Float32) {
 	layInhib := FFFBInhib{}
 
 	raws := raw.Values // these are ge
 
 	if !act.Shape.IsEqual(&raw.Shape) {
 		act.SetShape(raw.Shape.Shp, raw.Shape.Strd, raw.Shape.Nms)
+	}
+	if extGi != nil {
+		if !extGi.Shape.IsEqual(&raw.Shape) {
+			log.Println("KWTAPool: extGi is not correct shape, will not be used!")
+			extGi = nil
+		}
 	}
 
 	acts := act.Values
@@ -234,6 +265,7 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib) {
 		kwta.LayFFFB.Inhib(layInhib.AvgMaxGe.Avg, layInhib.AvgMaxGe.Max, layInhib.AvgMaxAct.Avg, &layInhib)
 
 		layInhib.AvgMaxAct.Init()
+		maxDelAct := float32(0)
 		pi := 0
 		for ly := 0; ly < layY; ly++ {
 			for lx := 0; lx < layX; lx++ {
@@ -241,8 +273,7 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib) {
 
 				kwta.PoolFFFB.Inhib(plInhib.AvgMaxGe.Avg, plInhib.AvgMaxGe.Max, plInhib.AvgMaxAct.Avg, plInhib)
 
-				gi := math32.Max(layInhib.Gi, plInhib.Gi)
-				geThr := kwta.GeThrFmG(gi)
+				giPool := math32.Max(layInhib.Gi, plInhib.Gi)
 
 				plInhib.AvgMaxAct.Init()
 				pui := pi * plN
@@ -250,9 +281,17 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib) {
 				for py := 0; py < plY; py++ {
 					for px := 0; px < plX; px++ {
 						idx := pui + ui
+						gi := giPool
+						if extGi != nil {
+							eIn := extGi.Values[idx]
+							eGi := kwta.PoolFFFB.Gi * kwta.PoolFFFB.FFInhib(eIn, eIn)
+							gi = math32.Max(gi, eGi)
+						}
+						geThr := kwta.GeThrFmG(gi)
 						ge := raws[idx]
 						act := acts[idx]
-						nwAct := kwta.ActFmG(geThr, ge, act)
+						nwAct, delAct := kwta.ActFmG(geThr, ge, act)
+						maxDelAct = math32.Max(maxDelAct, mat32.Abs(delAct))
 						layInhib.AvgMaxAct.UpdateVal(nwAct, idx)
 						plInhib.AvgMaxAct.UpdateVal(nwAct, ui)
 						acts[idx] = nwAct
@@ -265,5 +304,9 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]FFFBInhib) {
 			}
 		}
 		layInhib.AvgMaxAct.CalcAvg()
+		if cy > 2 && maxDelAct < kwta.DelActThr {
+			// fmt.Printf("under thr at cycle: %v\n", cy)
+			break
+		}
 	}
 }

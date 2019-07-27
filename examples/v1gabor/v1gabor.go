@@ -18,6 +18,8 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/giv"
+	"github.com/goki/ki/ki"
+	"github.com/goki/ki/kit"
 )
 
 // this is the stub main for gogi that calls our actual
@@ -31,21 +33,28 @@ func main() {
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
 type Vis struct {
-	V1sGabor    gabor.Filter     `desc:"V1 simple gabor filter parameters"`
-	V1sGeom     vfilter.Geom     `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
-	V1sKWTA     kwta.KWTA        `desc:"kwta parameters for V1s"`
-	ImgSize     image.Point      `desc:"target image size to use -- images will be rescaled to this size"`
-	V1sGaborTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter tensor"`
-	V1sGaborTab etable.Table     `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
-	Img         image.Image      `view:"-" desc:"current input image"`
-	ImgTsr      etensor.Float32  `view:"no-inline" desc:"input image as tensor"`
-	V1sTsr      etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
-	V1sKwtaTsr  etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
-	V1sPoolTsr  etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 tensor"`
-	V1sInhibs   []kwta.FFFBInhib `view:"no-inline" desc:"inhibition values for V1s KWTA"`
+	ImageFile     gi.FileName      `desc:"name of image file to operate on"`
+	V1sGabor      gabor.Filter     `desc:"V1 simple gabor filter parameters"`
+	V1sGeom       vfilter.Geom     `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
+	V1sNeighInhib kwta.NeighInhib  `desc:"neighborhood inhibition for V1s -- each unit gets inhibition from same feature in nearest orthogonal neighbors -- reduces redundancy of feature code"`
+	V1sKWTA       kwta.KWTA        `desc:"kwta parameters for V1s"`
+	ImgSize       image.Point      `desc:"target image size to use -- images will be rescaled to this size"`
+	V1sGaborTsr   etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter tensor"`
+	V1sGaborTab   etable.Table     `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
+	Img           image.Image      `view:"-" desc:"current input image"`
+	ImgTsr        etensor.Float32  `view:"no-inline" desc:"input image as tensor"`
+	V1sTsr        etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
+	V1sExtGiTsr   etensor.Float32  `view:"no-inline" desc:"V1 simple extra Gi from neighbor inhibition tensor"`
+	V1sKwtaTsr    etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
+	V1sAngOnlyTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, angle-only features tensor"`
+	V1sAngPoolTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
+	V1sInhibs     []kwta.FFFBInhib `view:"no-inline" desc:"inhibition values for V1s KWTA"`
 }
 
+var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)
+
 func (vi *Vis) Defaults() {
+	vi.ImageFile = gi.FileName("side-tee-128.png")
 	vi.V1sGabor.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
@@ -54,6 +63,7 @@ func (vi *Vis) Defaults() {
 	// to set border to .5 * filter size
 	// any further border sizes on same image need to add Geom.FiltRt!
 	vi.V1sGeom.Set(image.Point{0, 0}, image.Point{spc, spc}, image.Point{sz, sz})
+	vi.V1sNeighInhib.Defaults()
 	vi.V1sKWTA.Defaults()
 	vi.ImgSize = image.Point{128, 128}
 	// vi.ImgSize = image.Point{64, 64}
@@ -84,8 +94,35 @@ func (vi *Vis) OpenImage(filepath string) error {
 // Runs kwta and pool steps after gabor filter.
 func (vi *Vis) V1Simple() {
 	vfilter.Conv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgTsr, &vi.V1sTsr, vi.V1sGabor.Gain)
-	vi.V1sKWTA.KWTAPool(&vi.V1sTsr, &vi.V1sKwtaTsr, &vi.V1sInhibs)
-	vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sKwtaTsr, &vi.V1sPoolTsr)
+	if vi.V1sNeighInhib.On {
+		vi.V1sNeighInhib.Inhib4(&vi.V1sTsr, &vi.V1sExtGiTsr)
+	} else {
+		vi.V1sExtGiTsr.SetZeros()
+	}
+	if vi.V1sKWTA.On {
+		vi.V1sKWTA.KWTAPool(&vi.V1sTsr, &vi.V1sKwtaTsr, &vi.V1sInhibs, &vi.V1sExtGiTsr)
+	}
+}
+
+// V1Complex runs V1 complex filters on top of V1Simple features.
+// it computes Angle-only, max-pooled version of V1Simple inputs.
+func (vi *Vis) V1Complex() {
+	vfilter.MaxReduceFilterY(&vi.V1sKwtaTsr, &vi.V1sAngOnlyTsr)
+	vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sAngOnlyTsr, &vi.V1sAngPoolTsr)
+
+}
+
+// Filter is overall method to run filters on current image file name
+// loads the image from ImageFile and then runs filters
+func (vi *Vis) Filter() error {
+	err := vi.OpenImage(string(vi.ImageFile))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	vi.V1Simple()
+	vi.V1Complex()
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +154,7 @@ func (vi *Vis) ConfigGui() *gi.Window {
 	split.SetStretchMaxHeight()
 
 	sv := giv.AddNewStructView(split, "sv")
+	sv.Viewport = vp
 	sv.SetStruct(vi)
 
 	split.SetSplits(1)
@@ -132,23 +170,37 @@ func (vi *Vis) ConfigGui() *gi.Window {
 	emen := win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
 	emen.Menu.AddCopyCutPaste(win)
 
+	gi.SetQuitReqFunc(func() {
+		gi.Quit()
+	})
+	win.SetCloseReqFunc(func(w *gi.Window) {
+		gi.Quit()
+	})
+	win.SetCloseCleanFunc(func(w *gi.Window) {
+		go gi.Quit() // once main window is closed, quit
+	})
+
 	vp.UpdateEndNoSig(updt)
 
 	win.MainMenuUpdated()
 	return win
 }
 
+// These props create interactive toolbar for GUI
+var VisProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"Filter", ki.Props{
+			"desc": "run filter methods on current ImageFile image",
+			"icon": "updt",
+		}},
+	},
+}
+
 var TheVis Vis
 
 func mainrun() {
 	TheVis.Defaults()
-	err := TheVis.OpenImage("side-tee-128.png")
-	//	err := TheVis.OpenImage("img_0001_p00_005_tablelamp_007_tick_5_sac_1.jpg")
-	//	err := TheVis.OpenImage("img_0001_p00_005_tablelamp_007_tick_5_sac_1_crop.jpg")
-	if err != nil {
-		return
-	}
-	TheVis.V1Simple()
+	TheVis.Filter()
 	win := TheVis.ConfigGui()
 	win.StartEventLoop()
 }

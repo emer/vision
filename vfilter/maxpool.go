@@ -41,19 +41,20 @@ func MaxPool(psize, spc image.Point, in, out *etensor.Float32) {
 	for th := 0; th < nthrs; th++ {
 		wg.Add(1)
 		f := th * nper
-		go MaxPoolOne(&wg, f, nper, psize, spc, in, out)
+		go MaxPoolFlt(&wg, f, nper, psize, spc, in, out)
 	}
 	if rmdr > 0 {
 		wg.Add(1)
 		f := nthrs * nper
-		go MaxPoolOne(&wg, f, nper, psize, spc, in, out)
+		go MaxPoolFlt(&wg, f, rmdr, psize, spc, in, out)
 	}
 	wg.Wait()
 }
 
-// MaxPoolOne performs max pooling for one specific polarity, angle
+// MaxPoolFlt performs max pooling for specific filter range
+// (polarity, angle -- inner-most dimensions)
 // called as a goroutine from MaxPool
-func MaxPoolOne(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *etensor.Float32) {
+func MaxPoolFlt(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *etensor.Float32) {
 	ny := out.Dim(0)
 	nx := out.Dim(1)
 	nang := out.Dim(3)
@@ -62,12 +63,12 @@ func MaxPoolOne(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out
 		pol := f / nang
 		ang := f % nang
 		for y := 0; y < ny; y++ {
-			iy := y * int(spc.Y)
+			iy := y * spc.Y
 			for x := 0; x < nx; x++ {
-				ix := x * int(spc.X)
+				ix := x * spc.X
 				max := float32(0)
-				for py := 0; py < int(psize.Y); py++ {
-					for px := 0; px < int(psize.X); px++ {
+				for py := 0; py < psize.Y; py++ {
+					for px := 0; px < psize.X; px++ {
 						iv := in.Value([]int{iy + py, ix + px, pol, ang})
 						if iv > max {
 							max = iv
