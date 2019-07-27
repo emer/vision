@@ -14,16 +14,19 @@ import (
 // represents angle of gabor or related feature.
 // This helps reduce redundancy of feature code.
 type NeighInhib struct {
-	On bool    `desc:"use neighkborhood inhibition"`
+	On bool    `desc:"use neighborhood inhibition"`
 	Gi float32 `def:"0.6" desc:"overall value of the inhibition -- this is what is added into the unit Gi inhibition level"`
 }
 
 var (
 	// ortho neighbor coordinates for 4 angles, also uses negated version
-	// -- = X=0,Y=1
-	// /  = X=-1,Y=1
-	// |  = X=1,Y=0
-	// \  = X=-1,Y=-1
+	//  .
+	// --- = (0,1) (X,Y)
+	// . /
+	//  /  = (-1,1)
+	// | .  = (1,0)
+	//  \
+	// . \  = (-1,-1)
 	Neigh4X = []int{0, -1, 1, -1}
 	Neigh4Y = []int{1, 1, 0, -1}
 )

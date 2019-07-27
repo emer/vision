@@ -14,6 +14,7 @@ import (
 	_ "github.com/emer/etable/etview" // include to get gui views
 	"github.com/emer/vision/gabor"
 	"github.com/emer/vision/kwta"
+	"github.com/emer/vision/v1complex"
 	"github.com/emer/vision/vfilter"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
@@ -46,8 +47,12 @@ type Vis struct {
 	V1sTsr        etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
 	V1sExtGiTsr   etensor.Float32  `view:"no-inline" desc:"V1 simple extra Gi from neighbor inhibition tensor"`
 	V1sKwtaTsr    etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
+	V1sPoolTsr    etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor"`
 	V1sAngOnlyTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, angle-only features tensor"`
 	V1sAngPoolTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
+	V1cLenSumTsr  etensor.Float32  `view:"no-inline" desc:"V1 complex length sum filter output tensor"`
+	V1cEndStopTsr etensor.Float32  `view:"no-inline" desc:"V1 complex end stop filter output tensor"`
+	V1cAllTsr     etensor.Float32  `view:"no-inline" desc:"Combined V1c output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total"`
 	V1sInhibs     []kwta.FFFBInhib `view:"no-inline" desc:"inhibition values for V1s KWTA"`
 }
 
@@ -107,9 +112,11 @@ func (vi *Vis) V1Simple() {
 // V1Complex runs V1 complex filters on top of V1Simple features.
 // it computes Angle-only, max-pooled version of V1Simple inputs.
 func (vi *Vis) V1Complex() {
+	vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sKwtaTsr, &vi.V1sPoolTsr)
 	vfilter.MaxReduceFilterY(&vi.V1sKwtaTsr, &vi.V1sAngOnlyTsr)
 	vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sAngOnlyTsr, &vi.V1sAngPoolTsr)
-
+	v1complex.LenSum4(&vi.V1sAngPoolTsr, &vi.V1cLenSumTsr)
+	v1complex.EndStop4(&vi.V1sAngPoolTsr, &vi.V1cLenSumTsr, &vi.V1cEndStopTsr)
 }
 
 // Filter is overall method to run filters on current image file name
