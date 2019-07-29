@@ -22,27 +22,24 @@ func MaxReduceFilterY(in, out *etensor.Float32) {
 	if !etensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
 	}
-	nf := nang
 	ncpu := nproc.NumCPU()
-	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nf)
+	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang)
 	var wg sync.WaitGroup
 	for th := 0; th < nthrs; th++ {
 		wg.Add(1)
 		f := th * nper
-		go MaxReduceFilterYFlt(&wg, f, nper, in, out)
+		go maxReduceFilterYThr(&wg, f, nper, in, out)
 	}
 	if rmdr > 0 {
 		wg.Add(1)
 		f := nthrs * nper
-		go MaxReduceFilterYFlt(&wg, f, rmdr, in, out)
+		go maxReduceFilterYThr(&wg, f, rmdr, in, out)
 	}
 	wg.Wait()
 }
 
-// MaxReduceFilterY performs max-pooling reduce over inner Filter Y
-// dimension (polarities, colors), for specific filter range.
-// must have shape: Y, X, Polarities, Angles.
-func MaxReduceFilterYFlt(wg *sync.WaitGroup, fno, nf int, in, out *etensor.Float32) {
+// maxReduceFilterYThr is per-thread implementation
+func maxReduceFilterYThr(wg *sync.WaitGroup, fno, nf int, in, out *etensor.Float32) {
 	ny := in.Dim(0)
 	nx := in.Dim(1)
 	np := in.Dim(2)

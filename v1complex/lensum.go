@@ -5,7 +5,10 @@
 package v1complex
 
 import (
+	"sync"
+
 	"github.com/emer/etable/etensor"
+	"github.com/emer/vision/nproc"
 )
 
 var (
@@ -27,6 +30,27 @@ func LenSum4(act, lsum *etensor.Float32) {
 	if !lsum.Shape.IsEqual(&act.Shape) {
 		lsum.SetShape(act.Shape.Shp, act.Shape.Strd, act.Shape.Nms)
 	}
+	plY := act.Dim(2)
+	nang := act.Dim(3)
+	ncpu := nproc.NumCPU()
+	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang*plY)
+	var wg sync.WaitGroup
+	for th := 0; th < nthrs; th++ {
+		wg.Add(1)
+		f := th * nper
+		go lenSum4Thr(&wg, f, nper, act, lsum)
+	}
+	if rmdr > 0 {
+		wg.Add(1)
+		f := nthrs * nper
+		go lenSum4Thr(&wg, f, rmdr, act, lsum)
+	}
+	wg.Wait()
+}
+
+// lenSum4Thr is per-thread implementation
+func lenSum4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum *etensor.Float32) {
+
 	acts := act.Values
 	lsums := lsum.Values
 
@@ -34,39 +58,39 @@ func LenSum4(act, lsum *etensor.Float32) {
 	layX := act.Dim(1)
 
 	plY := act.Dim(2)
-	plX := act.Dim(3)
-	plN := plY * plX
+	nang := act.Dim(3)
+	plN := plY * nang
 
 	norm := float32(1) / 3
 
-	pi := 0
-	for ly := 0; ly < layY; ly++ {
-		for lx := 0; lx < layX; lx++ {
-			pui := pi * plN
-			ui := 0
-			for py := 0; py < plY; py++ {
-				for ang := 0; ang < plX; ang++ {
-					idx := pui + ui
-					ctr := acts[idx]
+	for fi := 0; fi < nf; fi++ {
+		ui := fno + fi
+		py := ui / nang
+		ang := ui % nang
+		pi := 0
+		for ly := 0; ly < layY; ly++ {
+			for lx := 0; lx < layX; lx++ {
+				pui := pi * plN
+				idx := pui + ui
+				ctr := acts[idx]
 
-					lp := float32(0)
-					lpX := lx + Line4X[ang]
-					lpY := ly + Line4Y[ang]
-					if lpX >= 0 && lpX < layX && lpY >= 0 && lpY < layY {
-						lp = act.Value([]int{lpY, lpX, py, ang})
-					}
-					ln := float32(0)
-					lnX := lx - Line4X[ang]
-					lnY := ly - Line4Y[ang]
-					if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
-						ln = act.Value([]int{lnY, lnX, py, ang})
-					}
-					ls := norm * (ctr + lp + ln)
-					lsums[idx] = ls
-					ui++
+				lp := float32(0)
+				lpX := lx + Line4X[ang]
+				lpY := ly + Line4Y[ang]
+				if lpX >= 0 && lpX < layX && lpY >= 0 && lpY < layY {
+					lp = act.Value([]int{lpY, lpX, py, ang})
 				}
+				ln := float32(0)
+				lnX := lx - Line4X[ang]
+				lnY := ly - Line4Y[ang]
+				if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
+					ln = act.Value([]int{lnY, lnX, py, ang})
+				}
+				ls := norm * (ctr + lp + ln)
+				lsums[idx] = ls
+				pi++
 			}
-			pi++
 		}
 	}
+	wg.Done()
 }

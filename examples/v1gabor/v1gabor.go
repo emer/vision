@@ -52,7 +52,7 @@ type Vis struct {
 	V1sAngPoolTsr etensor.Float32  `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
 	V1cLenSumTsr  etensor.Float32  `view:"no-inline" desc:"V1 complex length sum filter output tensor"`
 	V1cEndStopTsr etensor.Float32  `view:"no-inline" desc:"V1 complex end stop filter output tensor"`
-	V1cAllTsr     etensor.Float32  `view:"no-inline" desc:"Combined V1c output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total"`
+	V1AllTsr      etensor.Float32  `view:"no-inline" desc:"Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total"`
 	V1sInhibs     []kwta.FFFBInhib `view:"no-inline" desc:"inhibition values for V1s KWTA"`
 }
 
@@ -119,6 +119,25 @@ func (vi *Vis) V1Complex() {
 	v1complex.EndStop4(&vi.V1sAngPoolTsr, &vi.V1cLenSumTsr, &vi.V1cEndStopTsr)
 }
 
+// V1All aggregates all the relevant simple and complex features
+// into the V1AllTsr which is used for input to a network
+func (vi *Vis) V1All() {
+	ny := vi.V1sPoolTsr.Dim(0)
+	nx := vi.V1sPoolTsr.Dim(1)
+	nang := vi.V1sPoolTsr.Dim(3)
+	nrows := 5
+	oshp := []int{ny, nx, nrows, nang}
+	if !etensor.EqualInts(oshp, vi.V1AllTsr.Shp) {
+		vi.V1AllTsr.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
+	}
+	// 1 length-sum
+	vfilter.FeatAgg([]int{0}, 0, &vi.V1cLenSumTsr, &vi.V1AllTsr)
+	// 2 end-stop
+	vfilter.FeatAgg([]int{0, 1}, 1, &vi.V1cEndStopTsr, &vi.V1AllTsr)
+	// 2 pooled simple cell
+	vfilter.FeatAgg([]int{0, 1}, 3, &vi.V1sPoolTsr, &vi.V1AllTsr)
+}
+
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
 func (vi *Vis) Filter() error {
@@ -129,6 +148,7 @@ func (vi *Vis) Filter() error {
 	}
 	vi.V1Simple()
 	vi.V1Complex()
+	vi.V1All()
 	return nil
 }
 

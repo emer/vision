@@ -43,19 +43,18 @@ func Conv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32, gain floa
 	for th := 0; th < nthrs; th++ {
 		wg.Add(1)
 		f := th * nper
-		go ConvFlt(&wg, geom, f, nper, flt, img, out, gain)
+		go convThr(&wg, geom, f, nper, flt, img, out, gain)
 	}
 	if rmdr > 0 {
 		wg.Add(1)
 		f := nthrs * nper
-		go ConvFlt(&wg, geom, f, rmdr, flt, img, out, gain)
+		go convThr(&wg, geom, f, rmdr, flt, img, out, gain)
 	}
 	wg.Wait()
 }
 
-// ConvFlt performs convolution using given filter over entire image
-// This is called by Conv using different parallel goroutines
-func ConvFlt(wg *sync.WaitGroup, geom *Geom, fno, nf int, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
+// convThr is per-thread implementation
+func convThr(wg *sync.WaitGroup, geom *Geom, fno, nf int, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
 	ist := geom.Border.Sub(geom.FiltLt)
 	for fi := 0; fi < nf; fi++ {
 		f := fno + fi

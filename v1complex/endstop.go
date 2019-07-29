@@ -5,8 +5,11 @@
 package v1complex
 
 import (
+	"sync"
+
 	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
+	"github.com/emer/vision/nproc"
 )
 
 var (
@@ -49,40 +52,66 @@ func EndStop4(act, lsum, estop *etensor.Float32) {
 	if !etensor.EqualInts(oshp, estop.Shp) {
 		estop.SetShape(oshp, nil, []string{"Y", "X", "Dir", "Angle"})
 	}
+	ncpu := nproc.NumCPU()
+	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, plY*nang)
+	var wg sync.WaitGroup
+	for th := 0; th < nthrs; th++ {
+		wg.Add(1)
+		f := th * nper
+		go endStop4Thr(&wg, f, nper, act, lsum, estop)
+	}
+	if rmdr > 0 {
+		wg.Add(1)
+		f := nthrs * nper
+		go endStop4Thr(&wg, f, rmdr, act, lsum, estop)
+	}
+	wg.Wait()
+}
 
-	for ly := 0; ly < layY; ly++ {
-		for lx := 0; lx < layX; lx++ {
-			for py := 0; py < plY; py++ {
-				for ang := 0; ang < nang; ang++ {
-					for dir := 0; dir < 2; dir++ {
-						dsign := 1
-						if dir > 0 {
-							dsign = -1
-						}
-						ls := float32(0)
-						lnX := lx - dsign*Line4X[ang]
-						lnY := ly - dsign*Line4Y[ang]
-						if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
-							ls = lsum.Value([]int{lnY, lnX, py, ang})
-						}
+// endStop4Thr is per-thread implementation
+func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *etensor.Float32) {
+	layY := act.Dim(0)
+	layX := act.Dim(1)
 
-						offMax := float32(0)
-						for oi := 0; oi < 3; oi++ {
-							ofX := lx + dsign*EndStopOff4X[ang*3+oi]
-							ofY := ly + dsign*EndStopOff4Y[ang*3+oi]
-							if ofX >= 0 && ofX < layX && ofY >= 0 && ofY < layY {
-								off := act.Value([]int{ofY, ofX, py, ang})
-								offMax = math32.Max(offMax, off)
-							}
-						}
-						es := ls - offMax
-						if es < 0.2 {
-							es = 0
-						}
-						estop.Set([]int{ly, lx, py*2 + dir, ang}, es)
+	nang := act.Dim(3)
+
+	for fi := 0; fi < nf; fi++ {
+		ui := fno + fi
+		py := ui / nang
+		ang := ui % nang
+
+		for ly := 0; ly < layY; ly++ {
+			for lx := 0; lx < layX; lx++ {
+				for dir := 0; dir < 2; dir++ {
+					dsign := 1
+					if dir > 0 {
+						dsign = -1
 					}
+					ls := float32(0)
+					// length-sum point is "left" (negative) direction from ctr
+					lnX := lx - dsign*Line4X[ang]
+					lnY := ly - dsign*Line4Y[ang]
+					if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
+						ls = lsum.Value([]int{lnY, lnX, py, ang})
+					}
+
+					offMax := float32(0)
+					for oi := 0; oi < 3; oi++ {
+						ofX := lx + dsign*EndStopOff4X[ang*3+oi]
+						ofY := ly + dsign*EndStopOff4Y[ang*3+oi]
+						if ofX >= 0 && ofX < layX && ofY >= 0 && ofY < layY {
+							off := act.Value([]int{ofY, ofX, py, ang})
+							offMax = math32.Max(offMax, off)
+						}
+					}
+					es := ls - offMax // simple diff
+					if es < 0.2 {     // note: builtin threshold
+						es = 0
+					}
+					estop.Set([]int{ly, lx, py*2 + dir, ang}, es)
 				}
 			}
 		}
 	}
+	wg.Done()
 }
