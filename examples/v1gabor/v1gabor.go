@@ -45,6 +45,7 @@ type Vis struct {
 	V1sGaborTab   etable.Table    `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
 	Img           image.Image     `view:"-" desc:"current input image"`
 	ImgTsr        etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
+	ImgFmV1sTsr   etensor.Float32 `view:"no-inline" desc:"input image reconstructed from V1s tensor"`
 	V1sTsr        etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
 	V1sExtGiTsr   etensor.Float32 `view:"no-inline" desc:"V1 simple extra Gi from neighbor inhibition tensor"`
 	V1sKwtaTsr    etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
@@ -75,6 +76,8 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
+	vi.V1sGaborTab.Cols[1].SetMetaData("max", "0.05")
+	vi.V1sGaborTab.Cols[1].SetMetaData("min", "-0.05")
 }
 
 // OpenImage opens given filename as current image Img
@@ -92,6 +95,7 @@ func (vi *Vis) OpenImage(filepath string) error {
 	}
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.V1sGeom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
+	vi.ImgTsr.SetMetaData("image", "+")
 	return nil
 }
 
@@ -108,6 +112,14 @@ func (vi *Vis) V1Simple() {
 	if vi.V1sKWTA.On {
 		vi.V1sKWTA.KWTAPool(&vi.V1sTsr, &vi.V1sKwtaTsr, &vi.V1sInhibs, &vi.V1sExtGiTsr)
 	}
+}
+
+// ImgFmV1Simple reverses V1Simple Gabor filtering from V1s back to input image
+func (vi *Vis) ImgFmV1Simple() {
+	vi.ImgFmV1sTsr.SetShape(vi.ImgTsr.Shapes(), nil, nil)
+	vi.ImgFmV1sTsr.SetZeros()
+	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFmV1sTsr, &vi.V1sTsr, vi.V1sGabor.Gain)
+	vi.ImgFmV1sTsr.SetMetaData("image", "+")
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.
@@ -150,6 +162,7 @@ func (vi *Vis) Filter() error {
 	vi.V1Simple()
 	vi.V1Complex()
 	vi.V1All()
+	vi.ImgFmV1Simple()
 	return nil
 }
 
