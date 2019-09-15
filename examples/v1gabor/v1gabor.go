@@ -12,6 +12,7 @@ import (
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
 	_ "github.com/emer/etable/etview" // include to get gui views
+	"github.com/emer/etable/norm"
 	"github.com/emer/leabra/fffb"
 	"github.com/emer/vision/gabor"
 	"github.com/emer/vision/kwta"
@@ -50,6 +51,7 @@ type Vis struct {
 	V1sExtGiTsr   etensor.Float32 `view:"no-inline" desc:"V1 simple extra Gi from neighbor inhibition tensor"`
 	V1sKwtaTsr    etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
 	V1sPoolTsr    etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor"`
+	V1sUnPoolTsr  etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, un-max-pooled 2x2 of V1sPool tensor"`
 	V1sAngOnlyTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, angle-only features tensor"`
 	V1sAngPoolTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
 	V1cLenSumTsr  etensor.Float32 `view:"no-inline" desc:"V1 complex length sum filter output tensor"`
@@ -111,14 +113,20 @@ func (vi *Vis) V1Simple() {
 	}
 	if vi.V1sKWTA.On {
 		vi.V1sKWTA.KWTAPool(&vi.V1sTsr, &vi.V1sKwtaTsr, &vi.V1sInhibs, &vi.V1sExtGiTsr)
+	} else {
+		vi.V1sKwtaTsr.CopyFrom(&vi.V1sTsr)
 	}
 }
 
 // ImgFmV1Simple reverses V1Simple Gabor filtering from V1s back to input image
 func (vi *Vis) ImgFmV1Simple() {
-	vi.ImgFmV1sTsr.SetShape(vi.ImgTsr.Shapes(), nil, nil)
+	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sTsr)
+	vi.V1sUnPoolTsr.SetZeros()
+	vi.ImgFmV1sTsr.CopyShapeFrom(&vi.ImgTsr)
 	vi.ImgFmV1sTsr.SetZeros()
-	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFmV1sTsr, &vi.V1sTsr, vi.V1sGabor.Gain)
+	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
+	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFmV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
+	norm.Unit32(vi.ImgFmV1sTsr.Values)
 	vi.ImgFmV1sTsr.SetMetaData("image", "+")
 }
 
