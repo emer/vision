@@ -69,7 +69,8 @@ func GreyTensorToImage(img *image.Gray, tsr *etensor.Float32, padWidth int, topZ
 	return img
 }
 
-// WrapPad wraps given padding width of float32 image around sides
+// WrapPad wraps given padding width of float32 image around sides -- i.e., padding for
+// left side of image is the (mirrored) bits from the right side of image, etc.
 func WrapPad(tsr *etensor.Float32, padWidth int) {
 	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
 	usz := sz
