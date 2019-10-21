@@ -22,8 +22,8 @@ type KWTA struct {
 	On         bool        `desc:"whether to run kWTA or not"`
 	Iters      int         `desc:"maximum number of iterations to perform"`
 	DelActThr  float32     `def:"0.005" desc:"threshold on delta-activation (change in activation) for stopping updating of activations"`
-	LayFFFB    fffb.Params `desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
-	PoolFFFB   fffb.Params `desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
+	LayFFFB    fffb.Params `view:"inline" desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
+	PoolFFFB   fffb.Params `view:"inline" desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
 	XX1        nxx1.Params `view:"inline" desc:"Noisy X/X+1 rate code activation function parameters"`
 	ActTau     float32     `def:"3" desc:"time constant for integrating activation"`
 	Gbar       chans.Chans `view:"inline" desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
@@ -39,6 +39,8 @@ func (kwta *KWTA) Defaults() {
 	kwta.DelActThr = 0.005
 	kwta.LayFFFB.Defaults()
 	kwta.PoolFFFB.Defaults()
+	kwta.LayFFFB.On = true
+	kwta.PoolFFFB.On = true
 	kwta.PoolFFFB.Gi = 2.0
 	kwta.XX1.Defaults()
 	kwta.ActTau = 3

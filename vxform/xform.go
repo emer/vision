@@ -5,6 +5,7 @@
 package vxform
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/emer/emergent/env"
@@ -32,4 +33,8 @@ func (xf *XForm) Set(trX, trY, sc, rot float32) {
 // Image transforms given image according to current parameters
 func (xf *XForm) Image(img image.Image) *image.RGBA {
 	return XFormImage(img, xf.TransX.Cur, xf.TransY.Cur, xf.Scale.Cur, xf.Rot.Cur)
+}
+
+func (xf *XForm) String() string {
+	return fmt.Sprintf("tX: %.4f, tY: %.4f, Sc: %.4f, Rt: %.4f", xf.TransX.Cur, xf.TransY.Cur, xf.Scale.Cur, xf.Rot.Cur)
 }
