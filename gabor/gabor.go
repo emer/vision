@@ -23,7 +23,7 @@ import (
 type Filter struct {
 	On         bool    `desc:"is this filter active?"`
 	Wt         float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
-	Gain       float32 `viewif:"On" def:"2" desc:"overall gain multiplier applied after gabor filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
+	Gain       float32 `viewif:"On" def:"2" desc:"overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
 	Size       int     `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
 	WvLen      float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)"`
 	Spacing    int     `viewif:"On" desc:"how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`

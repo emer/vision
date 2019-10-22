@@ -199,8 +199,7 @@ func (vi *Vis) ConfigGui() *gi.Window {
 
 	split := gi.AddNewSplitView(mfr, "split")
 	split.Dim = gi.X
-	split.SetStretchMaxWidth()
-	split.SetStretchMaxHeight()
+	split.SetStretchMax()
 
 	sv := giv.AddNewStructView(split, "sv")
 	sv.Viewport = vp
