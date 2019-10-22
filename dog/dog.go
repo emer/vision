@@ -59,7 +59,7 @@ func GaussDenSig(x, sig float32) float32 {
 // setting dimensions to [3][Y][X] where Y = X = Size, and
 // first one is On-filter, second is Off-filter, and third is Net On - Off
 func (gf *Filter) ToTensor(tsr *etensor.Float32) {
-	tsr.SetShape([]int{3, gf.Size, gf.Size}, nil, []string{"3", "Y", "X"})
+	tsr.SetShape([]int{int(FiltersN), gf.Size, gf.Size}, nil, []string{"3", "Y", "X"})
 
 	ctr := 0.5 * float32(gf.Size-1)
 	radius := float32(gf.Size) * 0.5
@@ -81,10 +81,10 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 				ong = GaussDenSig(dist, gsOn)
 				offg = GaussDenSig(dist, gsOff)
 			}
-			tsr.Set([]int{0, y, x}, ong)
-			tsr.Set([]int{1, y, x}, offg)
+			tsr.Set([]int{int(On), y, x}, ong)
+			tsr.Set([]int{int(Off), y, x}, offg)
 			net := ong - offg
-			tsr.Set([]int{2, y, x}, net)
+			tsr.Set([]int{int(Net), y, x}, net)
 			if net > 0 {
 				posSum += net
 			} else if net < 0 {
@@ -97,13 +97,13 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	negNorm := float32(1) / negSum
 	for y := 0; y < gf.Size; y++ {
 		for x := 0; x < gf.Size; x++ {
-			val := tsr.Value([]int{2, y, x})
+			val := tsr.Value([]int{int(Net), y, x})
 			if val > 0 {
 				val *= posNorm
 			} else if val < 0 {
 				val *= negNorm
 			}
-			tsr.Set([]int{2, y, x}, val)
+			tsr.Set([]int{int(Net), y, x}, val)
 		}
 	}
 }
@@ -115,10 +115,26 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 func (gf *Filter) ToTable(tab *etable.Table) {
 	tab.SetFromSchema(etable.Schema{
 		{"Version", etensor.STRING, nil, nil},
-		{"Filter", etensor.FLOAT32, []int{3, gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
+		{"Filter", etensor.FLOAT32, []int{int(FiltersN), gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
 	}, 3)
 	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
-	tab.SetCellStringIdx(0, 0, "On")
-	tab.SetCellStringIdx(0, 1, "Off")
-	tab.SetCellStringIdx(0, 2, "Net")
+	tab.SetCellStringIdx(0, int(On), "On")
+	tab.SetCellStringIdx(0, int(Off), "Off")
+	tab.SetCellStringIdx(0, int(Net), "Net")
 }
+
+// FilterTensor extracts the given filter subspace from set of 3 filters in input tensor
+// 0 = On, 1 = Off, 2 = Net
+func (gf *Filter) FilterTensor(tsr *etensor.Float32, filt Filters) *etensor.Float32 {
+	return tsr.SubSpace(2, []int{int(filt)}).(*etensor.Float32)
+}
+
+// Filters is the type of filter
+type Filters int
+
+const (
+	On Filters = iota
+	Off
+	Net
+	FiltersN
+)

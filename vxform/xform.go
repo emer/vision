@@ -16,8 +16,8 @@ import (
 // Transformations are performed as: rotation, scale, then translation.
 // Scaling crops to retain the current image size.
 type XForm struct {
-	TransX env.CurPrvF32 `desc:"current, prv X-axis (horizontal) translation value, as proportion of image size"`
-	TransY env.CurPrvF32 `desc:"current, prv Y-axis (horizontal) translation value, as proportion of image size"`
+	TransX env.CurPrvF32 `desc:"current, prv X-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)"`
+	TransY env.CurPrvF32 `desc:"current, prv Y-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)"`
 	Scale  env.CurPrvF32 `desc:"current, prv scale value"`
 	Rot    env.CurPrvF32 `desc:"current, prv rotation value, in degrees"`
 }

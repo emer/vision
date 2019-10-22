@@ -57,11 +57,12 @@ func ScaleImage(img image.Image, sc float32) *image.RGBA {
 	return simg
 }
 
-// TransImage translates image in each axis by given proportion of total image size
+// TransImage translates image in each axis by given proportion of image half-size
+// i.e., 1 = move from center to edge
 func TransImage(img image.Image, trX, trY float32) *image.RGBA {
 	sz := img.Bounds().Size()
 	off := sz
-	off.X = int(math32.Round(float32(off.X) * trX))
-	off.Y = int(math32.Round(float32(off.Y) * trY))
+	off.X = int(math32.Round(0.5 * float32(off.X) * trX))
+	off.Y = int(math32.Round(0.5 * float32(off.Y) * trY))
 	return transform.Translate(img, off.X, off.Y)
 }

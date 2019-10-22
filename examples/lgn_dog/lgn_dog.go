@@ -36,7 +36,7 @@ type Vis struct {
 	DoG       dog.Filter      `desc:"LGN DoG filter parameters"`
 	Geom      vfilter.Geom    `inactive:"+" view:"inline" desc:"geometry of input, output"`
 	ImgSize   image.Point     `desc:"target image size to use -- images will be rescaled to this size"`
-	DoGTsr    etensor.Float32 `view:"no-inline" desc:"DoG filter tensor"`
+	DoGTsr    etensor.Float32 `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
 	DoGTab    etable.Table    `view:"no-inline" desc:"DoG filter table (view only)"`
 	Img       image.Image     `view:"-" desc:"current input image"`
 	ImgTsr    etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
@@ -85,8 +85,9 @@ func (vi *Vis) OpenImage(filepath string) error {
 // LGNDoG runs DoG filtering on input image
 // must have valid Img in place to start.
 func (vi *Vis) LGNDoG() {
-	flt := vi.DoGTsr.SubSpace(2, []int{2}).(*etensor.Float32) // net filter only
+	flt := vi.DoG.FilterTensor(&vi.DoGTsr, dog.Net)
 	vfilter.Conv1(&vi.Geom, flt, &vi.ImgTsr, &vi.OutTsr, vi.DoG.Gain)
+	// todo: log renorm
 }
 
 // Filter is overall method to run filters on current image file name
