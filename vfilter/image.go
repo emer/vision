@@ -19,7 +19,8 @@ import (
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
 func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
-	sz := img.Bounds().Size()
+	bd := img.Bounds()
+	sz := bd.Size()
 	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"Y", "X"})
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
@@ -27,7 +28,7 @@ func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool
 			if !topZero {
 				sy = (sz.Y - 1) - y
 			}
-			cv := img.At(x, sy)
+			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
 			var cl gi.Color
 			cl.SetColor(cv)
 			r, g, b, _ := cl.ToFloat32()
@@ -79,15 +80,12 @@ func WrapPad(tsr *etensor.Float32, padWidth int) {
 	for y := 0; y < sz.Y; y++ {
 		sy := y
 		if y < padWidth {
-			sy = usz.Y - 1 - y
+			sy = usz.Y - (padWidth - y)
 		} else if y >= usz.Y {
 			sy = padWidth + (y - usz.Y)
 		}
 		for x := 0; x < padWidth; x++ {
-			wv := tsr.Value([]int{sy, usz.X - 1 - x})
-			// testing only:
-			// wv *= float32(x) / float32(padWidth)
-			// tsr.Set([]int{sy, usz.X - 1 - x}, wv)
+			wv := tsr.Value([]int{sy, usz.X - (padWidth - x)})
 			tsr.Set([]int{y, x}, wv)
 		}
 		for x := usz.X; x < sz.X; x++ {
@@ -98,16 +96,16 @@ func WrapPad(tsr *etensor.Float32, padWidth int) {
 	for x := 0; x < sz.X; x++ {
 		sx := x
 		if x < padWidth {
-			sx = usz.X - 1 - x
+			sx = usz.X - (padWidth - x)
 		} else if x >= usz.X {
 			sx = padWidth + (x - usz.X)
 		}
 		for y := 0; y < padWidth; y++ {
-			wv := tsr.Value([]int{usz.Y - 1 - y, sx})
+			wv := tsr.Value([]int{usz.Y - (padWidth - y), sx})
 			tsr.Set([]int{y, x}, wv)
 		}
 		for y := usz.Y; y < sz.Y; y++ {
-			wv := tsr.Value([]int{padWidth + (y - usz.Y)})
+			wv := tsr.Value([]int{padWidth + (y - usz.Y), sx})
 			tsr.Set([]int{y, x}, wv)
 		}
 	}

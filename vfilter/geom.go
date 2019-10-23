@@ -49,9 +49,7 @@ func (ge *Geom) UpdtFilt() {
 // SetSize sets the input size, and computes output from that.
 func (ge *Geom) SetSize(inSize image.Point) {
 	ge.In = inSize
-	b2 := ge.Border
-	b2.X *= 2
-	b2.Y *= 2
+	b2 := ge.Border.Mul(2)
 	av := ge.In.Sub(b2)
 	ge.Out = av.Div(ge.Spacing.X) // only 1
 }

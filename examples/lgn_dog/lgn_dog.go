@@ -87,7 +87,8 @@ func (vi *Vis) OpenImage(filepath string) error {
 func (vi *Vis) LGNDoG() {
 	flt := vi.DoG.FilterTensor(&vi.DoGTsr, dog.Net)
 	vfilter.Conv1(&vi.Geom, flt, &vi.ImgTsr, &vi.OutTsr, vi.DoG.Gain)
-	// todo: log renorm
+	// log norm is generally good it seems for dogs
+	vfilter.TensorLogNorm32(&vi.OutTsr, 0) // 0 = renorm all, 1 = renorm within each on / off separately
 }
 
 // Filter is overall method to run filters on current image file name

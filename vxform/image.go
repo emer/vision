@@ -45,9 +45,7 @@ func ScaleImage(img image.Image, sc float32) *image.RGBA {
 	nsz.Y = int(math32.Round(float32(nsz.Y) * sc))
 	simg := transform.Resize(img, nsz.X, nsz.Y, transform.Linear)
 	if sc < 1 {
-		psz := sz.Sub(nsz)
-		psz.X /= 2
-		psz.Y /= 2
+		psz := sz.Sub(nsz).Div(2)
 		simg = clone.Pad(simg, psz.X, psz.Y, clone.EdgeExtend)
 		rsz := nsz.Add(psz).Add(psz)
 		if rsz != sz {
