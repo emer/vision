@@ -24,10 +24,10 @@ type XForm struct {
 
 // Set updates current values
 func (xf *XForm) Set(trX, trY, sc, rot float32) {
-	xf.TransX.Update(trX)
-	xf.TransY.Update(trY)
-	xf.Scale.Update(sc)
-	xf.Rot.Update(rot)
+	xf.TransX.Set(trX)
+	xf.TransY.Set(trY)
+	xf.Scale.Set(sc)
+	xf.Rot.Set(rot)
 }
 
 // Image transforms given image according to current parameters
