@@ -126,7 +126,7 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 // FilterTensor extracts the given filter subspace from set of 3 filters in input tensor
 // 0 = On, 1 = Off, 2 = Net
 func (gf *Filter) FilterTensor(tsr *etensor.Float32, filt Filters) *etensor.Float32 {
-	return tsr.SubSpace(2, []int{int(filt)}).(*etensor.Float32)
+	return tsr.SubSpace([]int{int(filt)}).(*etensor.Float32)
 }
 
 // Filters is the type of filter

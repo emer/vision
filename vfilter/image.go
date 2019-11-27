@@ -110,3 +110,5 @@ func WrapPad(tsr *etensor.Float32, padWidth int) {
 		}
 	}
 }
+
+// todo: MirrorPad with blur -- probably best.
