@@ -114,7 +114,7 @@ func (vi *Vis) ConfigGui() *gi.Window {
 	gi.SetAppName("v1gabor")
 	gi.SetAppAbout(`This demonstrates basic V1 Gabor Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`)
 
-	win := gi.NewWindow2D("v1gabor", "V1 Gabor Filtering", width, height, true)
+	win := gi.NewMainWindow("v1gabor", "V1 Gabor Filtering", width, height)
 	// vi.Win = win
 
 	vp := win.WinViewport2D()
