@@ -6,10 +6,10 @@ package vxform
 
 import (
 	"image"
+	"math"
 
 	"github.com/anthonynsimon/bild/clone"
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/g3n/engine/math32"
 )
 
 // XFormImage transforms given image according to given parameters
@@ -41,8 +41,8 @@ func RotImage(img image.Image, rot float32) *image.RGBA {
 func ScaleImage(img image.Image, sc float32) *image.RGBA {
 	sz := img.Bounds().Size()
 	nsz := sz
-	nsz.X = int(math32.Round(float32(nsz.X) * sc))
-	nsz.Y = int(math32.Round(float32(nsz.Y) * sc))
+	nsz.X = int(math.Round(float64(nsz.X) * float64(sc)))
+	nsz.Y = int(math.Round(float64(nsz.Y) * float64(sc)))
 	simg := transform.Resize(img, nsz.X, nsz.Y, transform.Linear)
 	if sc < 1 {
 		psz := sz.Sub(nsz).Div(2)
@@ -60,7 +60,7 @@ func ScaleImage(img image.Image, sc float32) *image.RGBA {
 func TransImage(img image.Image, trX, trY float32) *image.RGBA {
 	sz := img.Bounds().Size()
 	off := sz
-	off.X = int(math32.Round(0.5 * float32(off.X) * trX))
-	off.Y = int(math32.Round(0.5 * float32(off.Y) * trY))
+	off.X = int(math.Round(0.5 * float64(off.X) * float64(trX)))
+	off.Y = int(math.Round(0.5 * float64(off.Y) * float64(trY)))
 	return transform.Translate(img, off.X, off.Y)
 }
