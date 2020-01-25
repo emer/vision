@@ -21,6 +21,7 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/giv"
+	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
@@ -198,7 +199,7 @@ func (vi *Vis) ConfigGui() *gi.Window {
 	// vi.ToolBar = tbar
 
 	split := gi.AddNewSplitView(mfr, "split")
-	split.Dim = gi.X
+	split.Dim = mat32.X
 	split.SetStretchMax()
 
 	sv := giv.AddNewStructView(split, "sv")
