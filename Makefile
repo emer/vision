@@ -61,5 +61,5 @@ gopath-update:
 	cd examples/v1gabor; go get -u ./...
 	
 release:
-	$(MAKE) -C v1filter release
+	$(MAKE) -C vfilter release
 

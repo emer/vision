@@ -4,7 +4,7 @@ package vfilter
 
 const (
 	Version = "v1.0.1"
-	GitCommit = "63ed1a5" // the commit JUST BEFORE the release
-	VersionDate = "2019-12-30 11:10" // UTC
+	GitCommit = "940d0e0" // the commit JUST BEFORE the release
+	VersionDate = "2020-03-16 02:14" // UTC
 )
 
