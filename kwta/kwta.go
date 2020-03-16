@@ -12,7 +12,7 @@ import (
 	"github.com/emer/leabra/chans"
 	"github.com/emer/leabra/fffb"
 	"github.com/emer/leabra/nxx1"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // KWTA contains all the parameters needed for computing FFFB

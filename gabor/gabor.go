@@ -14,7 +14,7 @@ import (
 	"github.com/chewxy/math32"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/mat32"
+	"github.com/goki/mat32"
 )
 
 // gabor.Filter specifies a gabor filter function,
