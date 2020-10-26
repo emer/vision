@@ -133,7 +133,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 // For best performance store this and reuse to avoid memory allocations.
 // extGi is extra / external Gi inhibition per unit
 // -- e.g. from neighbor inhib -- must be size of raw, act.
-func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *[]fffb.Inhib, extGi *etensor.Float32) {
+func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi *etensor.Float32) {
 	layInhib := fffb.Inhib{}
 
 	raws := raw.Values // these are ge
