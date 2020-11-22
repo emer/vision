@@ -9,7 +9,7 @@ import (
 	"image/color"
 
 	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/gi"
+	"github.com/goki/gi/gist"
 )
 
 // RGBToGrey converts an RGB input image to a greyscale etensor
@@ -29,7 +29,7 @@ func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool
 				sy = (sz.Y - 1) - y
 			}
 			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
-			var cl gi.Color
+			var cl gist.Color
 			cl.SetColor(cv)
 			r, g, b, _ := cl.ToFloat32()
 			gv := (r + g + b) / 3
