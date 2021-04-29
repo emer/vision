@@ -9,9 +9,9 @@ forms of signal processing
 package dog
 
 import (
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
+	"github.com/goki/mat32"
 )
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.
@@ -52,7 +52,7 @@ func (gf *Filter) SetSize(sz, spc int) {
 // GaussDenSig returns gaussian density for given value and sigma
 func GaussDenSig(x, sig float32) float32 {
 	x /= sig
-	return 0.398942280 * math32.Exp(-0.5*x*x) / sig
+	return 0.398942280 * mat32.Exp(-0.5*x*x) / sig
 }
 
 // ToTensor renders dog filters into the given etable etensor.Tensor,
@@ -74,7 +74,7 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 			xf := float32(x) - ctr
 			yf := float32(y) - ctr
 
-			dist := math32.Hypot(xf, yf)
+			dist := mat32.Hypot(xf, yf)
 			ong := float32(0)
 			offg := float32(0)
 			if !(gf.CircleEdge && (dist > radius)) {

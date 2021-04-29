@@ -7,9 +7,9 @@ package v1complex
 import (
 	"sync"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/vision/nproc"
+	"github.com/goki/mat32"
 )
 
 var (
@@ -101,7 +101,7 @@ func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *etensor.Floa
 						ofY := ly + dsign*EndStopOff4Y[ang*3+oi]
 						if ofX >= 0 && ofX < layX && ofY >= 0 && ofY < layY {
 							off := act.Value([]int{ofY, ofX, py, ang})
-							offMax = math32.Max(offMax, off)
+							offMax = mat32.Max(offMax, off)
 						}
 					}
 					es := ls - offMax // simple diff

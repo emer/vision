@@ -7,7 +7,6 @@ package kwta
 import (
 	"log"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/leabra/chans"
 	"github.com/emer/leabra/fffb"
@@ -112,7 +111,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 			geThr := kwta.GeThrFmG(gi)
 			ge := raws[i]
 			nwAct, delAct := kwta.ActFmG(geThr, ge, acts[i])
-			maxDelAct = math32.Max(maxDelAct, mat32.Abs(delAct))
+			maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
 			inhib.Act.UpdateVal(nwAct, i)
 			acts[i] = nwAct
 		}
@@ -201,7 +200,7 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 
 				kwta.PoolFFFB.Inhib(plInhib)
 
-				giPool := math32.Max(layInhib.Gi, plInhib.Gi)
+				giPool := mat32.Max(layInhib.Gi, plInhib.Gi)
 
 				plInhib.Act.Init()
 				pui := pi * plN
@@ -213,13 +212,13 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 						if extGi != nil {
 							eIn := extGi.Values[idx]
 							eGi := kwta.PoolFFFB.Gi * kwta.PoolFFFB.FFInhib(eIn, eIn)
-							gi = math32.Max(gi, eGi)
+							gi = mat32.Max(gi, eGi)
 						}
 						geThr := kwta.GeThrFmG(gi)
 						ge := raws[idx]
 						act := acts[idx]
 						nwAct, delAct := kwta.ActFmG(geThr, ge, act)
-						maxDelAct = math32.Max(maxDelAct, mat32.Abs(delAct))
+						maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
 						layInhib.Act.UpdateVal(nwAct, idx)
 						plInhib.Act.UpdateVal(nwAct, ui)
 						acts[idx] = nwAct

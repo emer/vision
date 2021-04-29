@@ -7,9 +7,9 @@ package vfilter
 import (
 	"math"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
 	"github.com/emer/etable/norm"
+	"github.com/goki/mat32"
 )
 
 // TensorLogNorm32 computes 1 + log of all the numbers and then does
@@ -19,7 +19,7 @@ import (
 // ndim must be < NumDims() if not 0 (panics).
 func TensorLogNorm32(tsr *etensor.Float32, ndim int) {
 	for i, v := range tsr.Values {
-		tsr.Values[i] = math32.Log(1 + v)
+		tsr.Values[i] = mat32.Log(1 + v)
 	}
 	norm.TensorDivNorm32(tsr, ndim, norm.Max32)
 }

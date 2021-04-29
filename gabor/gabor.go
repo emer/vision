@@ -11,7 +11,6 @@ package gabor
 import (
 	"math"
 
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etable"
 	"github.com/emer/etable/etensor"
 	"github.com/goki/mat32"
@@ -88,13 +87,13 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 				xf := float32(x) - ctr
 				yf := float32(y) - ctr
 
-				dist := math32.Hypot(xf, yf)
+				dist := mat32.Hypot(xf, yf)
 				val := float32(0)
 				if !(gf.CircleEdge && (dist > radius)) {
-					nx := xf*math32.Cos(angf) - yf*math32.Sin(angf)
-					ny := yf*math32.Cos(angf) + xf*math32.Sin(angf)
-					gauss := math32.Exp(-(lenNorm*(nx*nx) + wdNorm*(ny*ny)))
-					sin := math32.Sin(twoPiNorm*ny + phsRad)
+					nx := xf*mat32.Cos(angf) - yf*mat32.Sin(angf)
+					ny := yf*mat32.Cos(angf) + xf*mat32.Sin(angf)
+					gauss := mat32.Exp(-(lenNorm*(nx*nx) + wdNorm*(ny*ny)))
+					sin := mat32.Sin(twoPiNorm*ny + phsRad)
 					val = gauss * sin
 					if val > 0 {
 						posSum += val

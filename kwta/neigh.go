@@ -5,8 +5,8 @@
 package kwta
 
 import (
-	"github.com/chewxy/math32"
 	"github.com/emer/etable/etensor"
+	"github.com/goki/mat32"
 )
 
 // NeighInhib adds an additional inhibition factor based on the same
@@ -66,12 +66,12 @@ func (ni *NeighInhib) Inhib4(act, extGi *etensor.Float32) {
 					npX := lx + Neigh4X[ang]
 					npY := ly + Neigh4Y[ang]
 					if npX >= 0 && npX < layX && npY >= 0 && npY < layY {
-						gi = math32.Max(gi, ni.Gi*act.Value([]int{npY, npX, py, ang}))
+						gi = mat32.Max(gi, ni.Gi*act.Value([]int{npY, npX, py, ang}))
 					}
 					nnX := lx - Neigh4X[ang]
 					nnY := ly - Neigh4Y[ang]
 					if nnX >= 0 && nnX < layX && nnY >= 0 && nnY < layY {
-						gi = math32.Max(gi, ni.Gi*act.Value([]int{nnY, nnX, py, ang}))
+						gi = mat32.Max(gi, ni.Gi*act.Value([]int{nnY, nnX, py, ang}))
 					}
 					gis[idx] = gi
 					ui++
