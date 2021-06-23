@@ -43,24 +43,14 @@ func SRGBFmLinear(rl, gl, bl float32) (r, g, b float32) {
 	return
 }
 
-// SRGBToOpponents converts sRGB to opponent components via LMS
+// SRGBToLMSComps converts sRGB to LMS components including opponents
 // using the HPE cone values: Red - Green (LvM) and Blue - Yellow (SvLM).
 // Includes the separate components in these subtractions as well.
 // Uses the CIECAM02 color appearance model (MoroneyFairchildHuntEtAl02)
 // https://en.wikipedia.org/wiki/CIECAM02
 // using the Hunt-Pointer-Estevez transform.
-func SRGBToOpponents(r, g, b float32) (lc, mc, sc, lmc, lvm, svlm, grey float32) {
+func SRGBToLMSComps(r, g, b float32) (lc, mc, sc, lmc, lvm, svlm, grey float32) {
 	l, m, s := SRGBToLMS_HPE(r, g, b) // note: HPE
-	lc, mc, sc, lmc, lvm, svlm, grey = LMSToOpponents(l, m, s)
+	lc, mc, sc, lmc, lvm, svlm, grey = LMSToComps(l, m, s)
 	return
 }
-
-/*
- func SRGBtoOpponents_GenLookup();
-  // ensure that the lookup table for srgb to opponents is built -- returns true if needed to build
-
-  static void sRGBtoOpponents_lkup(float& L_c, float& M_c, float& S_c, float& LM_c,
-                                   float& LvM, float& SvLM, float& grey,
-                                   r_s, g_s, b_s);
-  // #CAT_ColorSpace Lookup table version: convert sRGB to opponent components via LMS using the HPE cone values: Red - Green (LvM) and Blue - Yellow (SvLM) -- includes the separate components in these subtractions as well -- uses the CIECAM02 color appearance model (MoroneyFairchildHuntEtAl02) https://en.wikipedia.org/wiki/CIECAM02
-*/

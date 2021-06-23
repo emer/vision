@@ -12,6 +12,70 @@ import (
 	"github.com/goki/gi/gist"
 )
 
+// RGBToTensor converts an RGB input image to an RGB etensor
+// with outer dimension as RGB components.
+// padWidth is the amount of padding to add on all sides.
+// topZero retains the Y=0 value at the top of the tensor --
+// otherwise it is flipped with Y=0 at the bottom to be consistent
+// with the emergent / OpenGL standard coordinate system
+func RGBToTensor(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
+	bd := img.Bounds()
+	sz := bd.Size()
+	tsr.SetShape([]int{3, sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"RGB", "Y", "X"})
+	for y := 0; y < sz.Y; y++ {
+		for x := 0; x < sz.X; x++ {
+			sy := y
+			if !topZero {
+				sy = (sz.Y - 1) - y
+			}
+			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
+			var cl gist.Color
+			cl.SetColor(cv)
+			r, g, b, _ := cl.ToFloat32()
+			tsr.Set([]int{0, y + padWidth, x + padWidth}, r)
+			tsr.Set([]int{1, y + padWidth, x + padWidth}, g)
+			tsr.Set([]int{2, y + padWidth, x + padWidth}, b)
+		}
+	}
+}
+
+// RGBTensorToImage converts an RGB etensor to image -- uses
+// existing image if it is of correct size, otherwise makes a new one.
+// etensor must have outer dimension as RGB components.
+// padWidth is the amount of padding to subtract from all sides.
+// topZero retains the Y=0 value at the top of the tensor --
+// otherwise it is flipped with Y=0 at the bottom to be consistent
+// with the emergent / OpenGL standard coordinate system
+func RGBTensorToImage(img *image.RGBA, tsr *etensor.Float32, padWidth int, topZero bool) *image.RGBA {
+	var sz image.Point
+	sz.Y = tsr.Dim(1) - 2*padWidth
+	sz.X = tsr.Dim(2) - 2*padWidth
+	if img == nil {
+		img = image.NewRGBA(image.Rectangle{Max: sz})
+	} else {
+		isz := img.Bounds().Size()
+		if isz != sz {
+			img = image.NewRGBA(image.Rectangle{Max: sz})
+		}
+	}
+	for y := 0; y < sz.Y; y++ {
+		for x := 0; x < sz.X; x++ {
+			sy := y
+			if !topZero {
+				sy = (sz.Y - 1) - y
+			}
+			r := tsr.Value([]int{0, y + padWidth, x + padWidth})
+			g := tsr.Value([]int{1, y + padWidth, x + padWidth})
+			b := tsr.Value([]int{2, y + padWidth, x + padWidth})
+			ri := uint8(r * 255)
+			gi := uint8(g * 255)
+			bi := uint8(b * 255)
+			img.Set(x, sy, color.RGBA{ri, gi, bi, 255})
+		}
+	}
+	return img
+}
+
 // RGBToGrey converts an RGB input image to a greyscale etensor
 // in preparation for processing.
 // padWidth is the amount of padding to add on all sides.
@@ -70,8 +134,9 @@ func GreyTensorToImage(img *image.Gray, tsr *etensor.Float32, padWidth int, topZ
 	return img
 }
 
-// WrapPad wraps given padding width of float32 image around sides -- i.e., padding for
-// left side of image is the (mirrored) bits from the right side of image, etc.
+// WrapPad wraps given padding width of float32 image around sides
+// i.e., padding for left side of image is the (mirrored) bits
+// from the right side of image, etc.
 func WrapPad(tsr *etensor.Float32, padWidth int) {
 	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
 	usz := sz
@@ -108,6 +173,18 @@ func WrapPad(tsr *etensor.Float32, padWidth int) {
 			wv := tsr.Value([]int{padWidth + (y - usz.Y), sx})
 			tsr.Set([]int{y, x}, wv)
 		}
+	}
+}
+
+// WrapPadRGB wraps given padding width of float32 image around sides
+// i.e., padding for left side of image is the (mirrored) bits
+// from the right side of image, etc.
+// RGB version iterates over outer-most dimension of components.
+func WrapPadRGB(tsr *etensor.Float32, padWidth int) {
+	nc := tsr.Dim(0)
+	for i := 0; i < nc; i++ {
+		simg := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		WrapPad(simg, padWidth)
 	}
 }
 

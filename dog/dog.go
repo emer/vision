@@ -67,22 +67,22 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	gsOn := gf.OnSig * float32(gf.Size)
 	gsOff := gf.OffSig * float32(gf.Size)
 
-	posSum := float32(0)
-	negSum := float32(0)
+	var posSum, negSum, onSum, offSum float32
 	for y := 0; y < gf.Size; y++ {
 		for x := 0; x < gf.Size; x++ {
 			xf := float32(x) - ctr
 			yf := float32(y) - ctr
 
 			dist := mat32.Hypot(xf, yf)
-			ong := float32(0)
-			offg := float32(0)
+			var ong, offg float32
 			if !(gf.CircleEdge && (dist > radius)) {
 				ong = GaussDenSig(dist, gsOn)
 				offg = GaussDenSig(dist, gsOff)
 			}
 			tsr.Set([]int{int(On), y, x}, ong)
 			tsr.Set([]int{int(Off), y, x}, offg)
+			onSum += ong
+			offSum += offg
 			net := ong - offg
 			tsr.Set([]int{int(Net), y, x}, net)
 			if net > 0 {
@@ -92,18 +92,20 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 			}
 		}
 	}
-	// renorm each half
-	posNorm := float32(1) / posSum
-	negNorm := float32(1) / negSum
+	// renorm each half, separate components
 	for y := 0; y < gf.Size; y++ {
 		for x := 0; x < gf.Size; x++ {
 			val := tsr.Value([]int{int(Net), y, x})
 			if val > 0 {
-				val *= posNorm
+				val /= posSum
 			} else if val < 0 {
-				val *= negNorm
+				val /= negSum
 			}
 			tsr.Set([]int{int(Net), y, x}, val)
+			on := tsr.Value([]int{int(On), y, x})
+			tsr.Set([]int{int(On), y, x}, on/onSum)
+			off := tsr.Value([]int{int(Off), y, x})
+			tsr.Set([]int{int(Off), y, x}, off/offSum)
 		}
 	}
 }

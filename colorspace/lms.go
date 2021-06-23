@@ -4,7 +4,47 @@
 
 package colorspace
 
-import "github.com/goki/mat32"
+import (
+	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
+)
+
+// LMSComponents are different components of the LMS space
+// including opponent contrasts and grey
+type LMSComponents int
+
+//go:generate stringer -type=LMSComponents
+
+var KiT_LMSComponents = kit.Enums.AddEnum(LMSComponentsN, kit.NotBitFlag, nil)
+
+func (ev LMSComponents) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *LMSComponents) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+const (
+	// Long wavelength = Red component
+	LC LMSComponents = iota
+
+	// Medium wavelength = Green component
+	MC
+
+	// Short wavelength = Blue component
+	SC
+
+	// Long + Medium wavelength = Yellow component
+	LMC
+
+	// L - M opponent contrast: Red vs. Green
+	LvMC
+
+	// S - L+M opponent contrast: Blue vs. Yellow
+	SvLMC
+
+	// achromatic response (grey scale lightness)
+	GREY
+
+	// number of components
+	LMSComponentsN
+)
 
 ///////////////////////////////////
 // CAT02 versions
@@ -96,10 +136,10 @@ func SRGBToLMS_HPE(r, g, b float32) (l, m, s float32) {
 // bgLum is background luminance -- 200 default.
 func LuminanceAdaptation(bgLum float32) float32 {
 	lum5 := 5.0 * bgLum
-	k := 1 / (lum5 + 1)
+	k := 1.0 / (lum5 + 1)
 	k4 := k * k * k * k
 	k4m1 := 1 - k4
-	fl := 0.2*k4*lum5 + .1*k4m1*k4m1*mat32.Pow(lum5, 1/3)
+	fl := 0.2*k4*lum5 + .1*k4m1*k4m1*mat32.Pow(lum5, 1.0/3.0)
 	return fl
 }
 
@@ -115,23 +155,23 @@ func ResponseCompression(val float32) float32 {
 	return rc
 }
 
-// LMSToOpponents converts Long, Medium, Short cone-based responses
-// to opponent components: Red - Green (LvM) and Blue - Yellow (SvLM).
+// LMSToComps converts Long, Medium, Short cone-based responses
+// to components incl opponents: Red - Green (LvM) and Blue - Yellow (SvLM).
 // Includes the separate components in these subtractions as well
 // Uses the CIECAM02 color appearance model (MoroneyFairchildHuntEtAl02)
 // https://en.wikipedia.org/wiki/CIECAM02
-func LMSToOpponents(l, m, s float32) (lc, mc, sc, lmc, lvm, svlm, grey float32) {
+func LMSToComps(l, m, s float32) (lc, mc, sc, lmc, lvm, svlm, grey float32) {
 	lrc := ResponseCompression(l)
 	mrc := ResponseCompression(m)
 	src := ResponseCompression(s)
 	// subtract min and mult by 6 gets values roughly into 1-0 range for L,M
-	lc = 6 * ((lrc + (1/11)*src) - 0.109091)
-	mc = 6 * (((12 / 11) * mrc) - 0.109091)
+	lc = 6.0 * ((lrc + (1.0/11.0)*src) - 0.109091)
+	mc = 6.0 * (((12.0 / 11.0) * mrc) - 0.109091)
 	lvm = lc - mc // red-green subtracting "criterion for unique yellow"
-	lmc = 6 * (((1 / 9) * (lrc + mrc)) - 0.0222222)
-	sc = 6 * (((2 / 9) * src) - 0.0222222)
+	lmc = 6.0 * (((1.0 / 9.0) * (lrc + mrc)) - 0.0222222)
+	sc = 6.0 * (((2.0 / 9.0) * src) - 0.0222222)
 	svlm = sc - lmc // blue-yellow contrast
-	grey = (1 / 0.431787) * (2*lrc + mrc + .05*src - 0.305)
+	grey = (1.0 / 0.431787) * (2.0*lrc + mrc + .05*src - 0.305)
 	// note: last term should be: 0.725 * (1/5)^-0.2 = grey background assumption (Yb/Yw = 1/5) = 1
 	return
 }

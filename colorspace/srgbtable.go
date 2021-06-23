@@ -6,49 +6,14 @@ package colorspace
 
 import (
 	"github.com/emer/etable/etensor"
-	"github.com/goki/ki/kit"
 	"github.com/goki/mat32"
-)
-
-// LMSComponents are different components of the LMS space
-// including opponent contrasts and grey
-type LMSComponents int
-
-//go:generate stringer -type=LMSComponents
-
-var KiT_LMSComponents = kit.Enums.AddEnum(LMSComponentsN, kit.NotBitFlag, nil)
-
-func (ev LMSComponents) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *LMSComponents) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
-
-const (
-	// Long wavelength = Red component
-	LC LMSComponents = iota
-
-	// Medium wavelength = Green component
-	MC
-
-	// Short wavelength = Blue component
-	SC
-
-	// Long + Medium wavelength = Yellow component
-	LMC
-
-	// L - M opponent contrast: Red vs. Green
-	LvMC
-
-	// S - L+M opponent contrast: Blue vs. Yellow
-	SvLMC
-
-	// achromatic response (grey scale lightness)
-	GREY
-
-	// number of components
-	LMSComponentsN
 )
 
 // SRGBToOp implements a lookup-table for the conversion of
 // SRGB components to LMS color opponent values.
+// After all this, it looks like the direct computation is faster
+// than the lookup table!  In any case, it is all here and reasonably
+// accurate (mostly under 1.0e-4 according to testing)
 type SRGBToOp struct {
 	Levels int             `desc:"number of levels in the lookup table -- linear interpolation used"`
 	Table  etensor.Float32 `desc:"lookup table"`
@@ -74,7 +39,7 @@ func (so *SRGBToOp) Init() {
 			gf := float32(gi) / llf
 			for ri := 0; ri < ll; ri++ {
 				rf := float32(ri) / llf
-				lc, mc, sc, lmc, lvm, svlm, grey := SRGBToOpponents(rf, gf, bf)
+				lc, mc, sc, lmc, lvm, svlm, grey := SRGBToLMSComps(rf, gf, bf)
 				so.Table.Set([]int{int(LC), ri, gi, bi}, lc)
 				so.Table.Set([]int{int(MC), ri, gi, bi}, mc)
 				so.Table.Set([]int{int(SC), ri, gi, bi}, sc)
