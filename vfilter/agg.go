@@ -54,3 +54,23 @@ func featAggThr(wg *sync.WaitGroup, fno, nf int, srcRows []int, trgStart int, sr
 	}
 	wg.Done()
 }
+
+// OuterAgg does simple aggregation of outer-most dimension from tensor
+// into another 4D tensor, with Y, X as outer-most two dimensions,
+// starting at given inner-most feature offset, and inner row-wise offset.
+// inner row-wise dimension maps the outer-most dimension of source tensor.
+// no bounds checking is done on output so it will just fail if
+// there isn't enough room -- allocate the output size before calling!
+func OuterAgg(innerPos, rowOff int, src, out *etensor.Float32) {
+	nout := src.Dim(0)
+	ny := src.Dim(1)
+	nx := src.Dim(2)
+	for y := 0; y < ny; y++ {
+		for x := 0; x < nx; x++ {
+			for f := 0; f < nout; f++ {
+				sv := src.Value([]int{f, y, x})
+				out.Set([]int{y, x, rowOff + f, innerPos}, sv)
+			}
+		}
+	}
+}

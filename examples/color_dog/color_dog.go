@@ -33,38 +33,51 @@ func main() {
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
 type Vis struct {
-	ImageFile gi.FileName                 `desc:"name of image file to operate on -- if macbeth or empty use the macbeth standard color test image"`
-	DoG       dog.Filter                  `desc:"LGN DoG filter parameters"`
-	Geom      vfilter.Geom                `inactive:"+" view:"inline" desc:"geometry of input, output"`
-	ImgSize   image.Point                 `desc:"target image size to use -- images will be rescaled to this size"`
-	DoGTsr    etensor.Float32             `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
-	DoGTab    etable.Table                `view:"no-inline" desc:"DoG filter table (view only)"`
-	Img       image.Image                 `view:"-" desc:"current input image"`
-	ImgTsr    etensor.Float32             `view:"no-inline" desc:"input image as RGB tensor"`
-	ImgLMS    etensor.Float32             `view:"no-inline" desc:"LMS components + opponents tensor version of image"`
-	OutTsrs   map[string]*etensor.Float32 `view:"no-inline" desc:"DoG filter output tensors"`
+	ImageFile  gi.FileName                 `desc:"name of image file to operate on -- if macbeth or empty use the macbeth standard color test image"`
+	DoG        dog.Filter                  `desc:"LGN DoG filter parameters"`
+	DoGNames   []string                    `desc:"names of the dog gain sets -- for naming output data"`
+	DoGGains   []float32                   `desc:"overall gain factors, to compensate for diffs in OnGains"`
+	DoGOnGains []float32                   `desc:"OnGain factors -- 1 = perfect balance, otherwise has relative imbalance for capturing main effects"`
+	Geom       vfilter.Geom                `inactive:"+" view:"inline" desc:"geometry of input, output"`
+	ImgSize    image.Point                 `desc:"target image size to use -- images will be rescaled to this size"`
+	DoGTsr     etensor.Float32             `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
+	DoGTab     etable.Table                `view:"no-inline" desc:"DoG filter table (view only)"`
+	Img        image.Image                 `view:"-" desc:"current input image"`
+	ImgTsr     etensor.Float32             `view:"no-inline" desc:"input image as RGB tensor"`
+	ImgLMS     etensor.Float32             `view:"no-inline" desc:"LMS components + opponents tensor version of image"`
+	OutAll     etensor.Float32             `view:"no-inline" desc:"output from 3 dogs with different tuning"`
+	OutTsrs    map[string]*etensor.Float32 `view:"no-inline" desc:"DoG filter output tensors"`
 }
 
 var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)
 
 func (vi *Vis) Defaults() {
-	vi.ImageFile = "" // gi.FileName("GrangerRainbow.png")
+	vi.ImageFile = ""                          // gi.FileName("GrangerRainbow.png")
+	vi.DoGNames = []string{"Bal", "On", "Off"} // balanced, gain toward On, gain toward Off
+	vi.DoGGains = []float32{8, 4.1, 4.4}
+	vi.DoGOnGains = []float32{1, 1.2, 0.833}
+	sz := 16
+	spc := 16
 	vi.DoG.Defaults()
-	sz := 12 // V1mF16 typically = 12, no border
-	spc := 4
 	vi.DoG.SetSize(sz, spc)
+	vi.DoG.OnSig = .5 // no spatial component, just pure contrast
+	vi.DoG.OffSig = .5
+	vi.DoG.Gain = 8
+	vi.DoG.OnGain = 1
+
 	// note: first arg is border -- we are relying on Geom
 	// to set border to .5 * filter size
 	// any further border sizes on same image need to add Geom.FiltRt!
 	vi.Geom.Set(image.Point{0, 0}, image.Point{spc, spc}, image.Point{sz, sz})
-	// vi.ImgSize = image.Point{512, 512}
-	vi.ImgSize = image.Point{256, 256}
+	vi.ImgSize = image.Point{512, 512}
+	// vi.ImgSize = image.Point{256, 256}
 	// vi.ImgSize = image.Point{128, 128}
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
 	vi.DoGTab.Cols[1].SetMetaData("max", "0.2")
 	vi.DoGTab.Cols[1].SetMetaData("min", "-0.2")
+	vi.OutTsrs = make(map[string]*etensor.Float32)
 }
 
 // OutTsr gets output tensor of given name, creating if not yet made
@@ -120,33 +133,63 @@ func (vi *Vis) OpenMacbeth() error {
 // ColorDoG runs color contrast DoG filtering on input image
 // must have valid Img in place to start.
 func (vi *Vis) ColorDoG() {
-	dogOn := vi.DoG.FilterTensor(&vi.DoGTsr, dog.On)
-	dogOff := vi.DoG.FilterTensor(&vi.DoGTsr, dog.Off)
-
-	rgtsr := vi.OutTsr("DoG_Red-Green")
 	rimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LC)}).(*etensor.Float32)
 	gimg := vi.ImgLMS.SubSpace([]int{int(colorspace.MC)}).(*etensor.Float32)
 	rimg.SetMetaData("grid-fill", "1")
 	gimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Red"] = rimg
 	vi.OutTsrs["Green"] = gimg
-	vfilter.ConvDiff(&vi.Geom, dogOn, dogOff, rimg, gimg, rgtsr, vi.DoG.Gain, vi.DoG.OnGain)
 
-	bytsr := vi.OutTsr("DoG_Blue-Yellow")
 	bimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SC)}).(*etensor.Float32)
 	yimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LMC)}).(*etensor.Float32)
 	bimg.SetMetaData("grid-fill", "1")
 	yimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue"] = bimg
 	vi.OutTsrs["Yellow"] = yimg
-	vfilter.ConvDiff(&vi.Geom, dogOn, dogOff, bimg, yimg, bytsr, vi.DoG.Gain, vi.DoG.OnGain)
 
+	// for display purposes only:
 	byimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SvLMC)}).(*etensor.Float32)
 	rgimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LvMC)}).(*etensor.Float32)
 	byimg.SetMetaData("grid-fill", "1")
 	rgimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue-Yellow"] = byimg
 	vi.OutTsrs["Red-Green"] = rgimg
+
+	for i, nm := range vi.DoGNames {
+		vi.DoGFilter(nm, vi.DoGGains[i], vi.DoGOnGains[i])
+	}
+}
+
+// DoGFilter runs filtering for given gain factors
+func (vi *Vis) DoGFilter(name string, gain, onGain float32) {
+	dogOn := vi.DoG.FilterTensor(&vi.DoGTsr, dog.On)
+	dogOff := vi.DoG.FilterTensor(&vi.DoGTsr, dog.Off)
+
+	rgtsr := vi.OutTsr("DoG_" + name + "_Red-Green")
+	rimg := vi.OutTsr("Red")
+	gimg := vi.OutTsr("Green")
+	vfilter.ConvDiff(&vi.Geom, dogOn, dogOff, rimg, gimg, rgtsr, gain, onGain)
+
+	bytsr := vi.OutTsr("DoG_" + name + "_Blue-Yellow")
+	bimg := vi.OutTsr("Blue")
+	yimg := vi.OutTsr("Yellow")
+	vfilter.ConvDiff(&vi.Geom, dogOn, dogOff, bimg, yimg, bytsr, gain, onGain)
+}
+
+// AggAll aggregates the different DoG components into
+func (vi *Vis) AggAll() {
+	otsr := vi.OutTsr("DoG_" + vi.DoGNames[0] + "_Red-Green")
+	ny := otsr.Dim(1)
+	nx := otsr.Dim(2)
+	oshp := []int{ny, nx, 2, 2 * len(vi.DoGNames)}
+	vi.OutAll.SetShape(oshp, nil, []string{"Y", "X", "OnOff", "RGBY"})
+	vi.OutAll.SetMetaData("grid-fill", "1")
+	for i, nm := range vi.DoGNames {
+		rgtsr := vi.OutTsr("DoG_" + nm + "_Red-Green")
+		bytsr := vi.OutTsr("DoG_" + nm + "_Blue-Yellow")
+		vfilter.OuterAgg(i*2, 0, rgtsr, &vi.OutAll)
+		vfilter.OuterAgg(i*2+1, 0, bytsr, &vi.OutAll)
+	}
 }
 
 // Filter is overall method to run filters on current image file name
@@ -166,6 +209,7 @@ func (vi *Vis) Filter() error {
 		}
 	}
 	vi.ColorDoG()
+	vi.AggAll()
 	return nil
 }
 
