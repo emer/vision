@@ -46,6 +46,32 @@ const (
 	LMSComponentsN
 )
 
+// Opponents enumerates the three primary opponency channels:
+// WhiteBlack, RedGreen, BlueYellow
+// using colloquial "everyday" terms.
+type Opponents int
+
+//go:generate stringer -type=Opponents
+
+var KiT_Opponents = kit.Enums.AddEnum(OpponentsN, kit.NotBitFlag, nil)
+
+func (ev Opponents) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
+func (ev *Opponents) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+
+const (
+	// White vs. Black greyscale
+	WhiteBlack Opponents = iota
+
+	// Red vs. Green
+	RedGreen
+
+	// Blue vs. Yellow
+	BlueYellow
+
+	// number of opponents
+	OpponentsN
+)
+
 ///////////////////////////////////
 // CAT02 versions
 
