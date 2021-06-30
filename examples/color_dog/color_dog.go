@@ -110,6 +110,7 @@ func (vi *Vis) OpenImage(filepath string) error {
 	vfilter.WrapPadRGB(&vi.ImgTsr, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
 	vi.ImgTsr.SetMetaData("image", "+")
+	vi.ImgTsr.SetMetaData("min", "0")
 	return nil
 }
 
@@ -118,6 +119,7 @@ func (vi *Vis) OpenMacbeth() error {
 	colorspace.MacbethImage(&vi.ImgTsr, vi.ImgSize.X, vi.ImgSize.Y, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
 	vi.ImgTsr.SetMetaData("image", "+")
+	vi.ImgTsr.SetMetaData("min", "0")
 	img := &image.RGBA{}
 	img = vfilter.RGBTensorToImage(img, &vi.ImgTsr, 0, false)
 	vi.Img = img

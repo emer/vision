@@ -45,6 +45,10 @@ type V1Img struct {
 	LMS  etensor.Float32 `view:"no-inline" desc:"LMS components + opponents tensor version of image"`
 }
 
+func (vi *V1Img) Defaults() {
+	vi.Size = image.Point{128, 128}
+}
+
 // OpenImage opens given filename as current image Img
 // and converts to a float32 tensor for processing
 func (vi *V1Img) OpenImage(filepath string, filtsz int) error {
@@ -61,8 +65,8 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error {
 	vfilter.RGBToTensor(vi.Img, &vi.Tsr, filtsz, false) // pad for filt, bot zero
 	vfilter.WrapPadRGB(&vi.Tsr, filtsz)
 	colorspace.RGBTensorToLMSComps(&vi.LMS, &vi.Tsr)
-	// vi.Tsr.SetMetaData("image", "+")
-	vi.Tsr.SetMetaData("grid-fill", "1")
+	vi.Tsr.SetMetaData("image", "+")
+	vi.Tsr.SetMetaData("min", "0")
 	return nil
 }
 
@@ -80,7 +84,7 @@ type V1sOut struct {
 type Vis struct {
 	Color         bool                          `desc:"if true, do full color filtering -- else Black/White only"`
 	SepColor      bool                          `desc:"record separate rows in V1s summary for each color -- otherwise just records the max across all colors"`
-	ColorGain     float32                       `desc:"extra gain for color channels -- lower contrast in general"`
+	ColorGain     float32                       `def:"8" desc:"extra gain for color channels -- lower contrast in general"`
 	Img           *V1Img                        `desc:"image that we operate upon -- one image often shared among multiple filters"`
 	V1sGabor      gabor.Filter                  `desc:"V1 simple gabor filter parameters"`
 	V1sGeom       vfilter.Geom                  `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
@@ -90,14 +94,14 @@ type Vis struct {
 	V1sGaborTab   etable.Table                  `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
 	V1s           [colorspace.OpponentsN]V1sOut `view:"inline" desc:"V1 simple gabor filter output, per channel"`
 	V1sMaxTsr     etensor.Float32               `view:"no-inline" desc:"max over V1 simple gabor filters output tensor"`
+	V1sPoolTsr    etensor.Float32               `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor"`
 	V1sUnPoolTsr  etensor.Float32               `view:"no-inline" desc:"V1 simple gabor filter output, un-max-pooled 2x2 of Pool tensor"`
 	ImgFmV1sTsr   etensor.Float32               `view:"no-inline" desc:"input image reconstructed from V1s tensor"`
-	V1sPoolTsr    etensor.Float32               `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor"`
 	V1sAngOnlyTsr etensor.Float32               `view:"no-inline" desc:"V1 simple gabor filter output, angle-only features tensor"`
 	V1sAngPoolTsr etensor.Float32               `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
 	V1cLenSumTsr  etensor.Float32               `view:"no-inline" desc:"V1 complex length sum filter output tensor"`
 	V1cEndStopTsr etensor.Float32               `view:"no-inline" desc:"V1 complex end stop filter output tensor"`
-	V1AllTsr      etensor.Float32               `view:"no-inline" desc:"Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total"`
+	V1AllTsr      etensor.Float32               `view:"no-inline" desc:"Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total (9 if SepColor)"`
 	V1sInhibs     fffb.Inhibs                   `view:"no-inline" desc:"inhibition values for V1s KWTA"`
 }
 
@@ -105,10 +109,11 @@ var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)
 
 func (vi *Vis) Defaults() {
 	vi.Color = true
+	vi.SepColor = true
 	vi.ColorGain = 8
 	vi.Img = &V1Img{}
+	vi.Img.Defaults()
 	vi.Img.File = gi.FileName("car_004_00001.png")
-	vi.Img.Size = image.Point{128, 128}
 	vi.V1sGabor.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
@@ -151,10 +156,10 @@ func (vi *Vis) V1Simple() {
 	vi.V1sMaxTsr.CopyShapeFrom(&wbout.KwtaTsr)
 	vi.V1sMaxTsr.CopyFrom(&wbout.KwtaTsr)
 	if vi.Color {
-		rgout := &vi.V1s[int(colorspace.RedGreen)]
+		rgout := &vi.V1s[colorspace.RedGreen]
 		rgimg := vi.Img.LMS.SubSpace([]int{int(colorspace.LvMC)}).(*etensor.Float32)
 		vi.V1SimpleImg(rgout, rgimg, vi.ColorGain)
-		byout := &vi.V1s[int(colorspace.BlueYellow)]
+		byout := &vi.V1s[colorspace.BlueYellow]
 		byimg := vi.Img.LMS.SubSpace([]int{int(colorspace.SvLMC)}).(*etensor.Float32)
 		vi.V1SimpleImg(byout, byimg, vi.ColorGain)
 		for i, vl := range vi.V1sMaxTsr.Values {
@@ -213,8 +218,8 @@ func (vi *Vis) V1All() {
 	vfilter.FeatAgg([]int{0, 1}, 1, &vi.V1cEndStopTsr, &vi.V1AllTsr)
 	// 2 pooled simple cell
 	if vi.Color && vi.SepColor {
-		rgout := &vi.V1s[int(colorspace.RedGreen)]
-		byout := &vi.V1s[int(colorspace.BlueYellow)]
+		rgout := &vi.V1s[colorspace.RedGreen]
+		byout := &vi.V1s[colorspace.BlueYellow]
 		vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &rgout.KwtaTsr, &rgout.PoolTsr)
 		vfilter.MaxPool(image.Point{2, 2}, image.Point{2, 2}, &byout.KwtaTsr, &byout.PoolTsr)
 		vfilter.FeatAgg([]int{0, 1}, 5, &rgout.PoolTsr, &vi.V1AllTsr)
