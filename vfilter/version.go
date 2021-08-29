@@ -3,8 +3,7 @@
 package vfilter
 
 const (
-	Version     = "v1.1.11"
-	GitCommit   = "95395b4" // the commit JUST BEFORE the release
-	VersionDate = "2021-06-30 07:22" // UTC
+	Version     = "v1.1.12"
+	GitCommit   = "e1bc3da"          // the commit JUST BEFORE the release
+	VersionDate = "2021-08-29 10:59" // UTC
 )
-
