@@ -188,4 +188,97 @@ func WrapPadRGB(tsr *etensor.Float32, padWidth int) {
 	}
 }
 
-// todo: MirrorPad with blur -- probably best.
+// EdgeAvg returns the average value around the effective edge of image
+// at padWidth in from each side
+func EdgeAvg(tsr *etensor.Float32, padWidth int) float32 {
+	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+	esz := sz
+	esz.X -= 2 * padWidth
+	esz.Y -= 2 * padWidth
+	var avg float32
+	n := 0
+	for y := 0; y < esz.Y; y++ {
+		oy := y + padWidth
+		avg += tsr.Value([]int{oy, padWidth})
+		avg += tsr.Value([]int{oy, padWidth + esz.X})
+	}
+	n += 2 * esz.X
+	for x := 0; x < esz.X; x++ {
+		ox := x + padWidth
+		avg += tsr.Value([]int{padWidth, ox})
+		avg += tsr.Value([]int{padWidth + esz.Y, ox})
+	}
+	n += 2 * esz.X
+	return avg / float32(n)
+}
+
+// FadePad fades given padding width of float32 image around sides
+// gradually fading the edge value toward a mean edge value
+func FadePad(tsr *etensor.Float32, padWidth int) {
+	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+	usz := sz
+	usz.Y -= padWidth
+	usz.X -= padWidth
+	avg := EdgeAvg(tsr, padWidth)
+	for y := 0; y < sz.Y; y++ {
+		var lv, rv float32
+		switch {
+		case y < padWidth:
+			lv = tsr.Value([]int{padWidth, padWidth})
+			rv = tsr.Value([]int{padWidth, usz.X - 1})
+		case y >= usz.Y:
+			lv = tsr.Value([]int{usz.Y - 1, padWidth})
+			rv = tsr.Value([]int{usz.Y - 1, usz.X - 1})
+		default:
+			lv = tsr.Value([]int{y, padWidth})
+			rv = tsr.Value([]int{y, usz.X - 1})
+		}
+		for x := 0; x < padWidth; x++ {
+			if y < x || y >= sz.Y-x {
+				continue
+			}
+			p := float32(x) / float32(padWidth)
+			pavg := (1 - p) * avg
+			lpv := p*lv + pavg
+			rpv := p*rv + pavg
+			tsr.Set([]int{y, x}, lpv)
+			tsr.Set([]int{y, sz.X - 1 - x}, rpv)
+		}
+	}
+	for x := 0; x < sz.X; x++ {
+		var tv, bv float32
+		switch {
+		case x < padWidth:
+			tv = tsr.Value([]int{padWidth, padWidth})
+			bv = tsr.Value([]int{usz.Y - 1, padWidth})
+		case x >= usz.X:
+			tv = tsr.Value([]int{padWidth, usz.X - 1})
+			bv = tsr.Value([]int{usz.Y - 1, usz.X - 1})
+		default:
+			tv = tsr.Value([]int{padWidth, x})
+			bv = tsr.Value([]int{usz.X - 1, x})
+		}
+		for y := 0; y < padWidth; y++ {
+			if x < y || x >= sz.X-y {
+				continue
+			}
+			p := float32(y) / float32(padWidth)
+			pavg := (1 - p) * avg
+			tpv := p*tv + pavg
+			bpv := p*bv + pavg
+			tsr.Set([]int{y, x}, tpv)
+			tsr.Set([]int{sz.Y - 1 - y, x}, bpv)
+		}
+	}
+}
+
+// FadePadRGB fades given padding width of float32 image around sides
+// gradually fading the edge value toward a mean edge value.
+// RGB version iterates over outer-most dimension of components.
+func FadePadRGB(tsr *etensor.Float32, padWidth int) {
+	nc := tsr.Dim(0)
+	for i := 0; i < nc; i++ {
+		simg := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		FadePad(simg, padWidth)
+	}
+}

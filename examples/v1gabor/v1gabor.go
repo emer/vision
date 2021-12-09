@@ -98,6 +98,7 @@ func (vi *Vis) OpenImage(filepath string) error {
 	}
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.V1sGeom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
+	// vfilter.FadePad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
 	vi.ImgTsr.SetMetaData("image", "+")
 	return nil
 }
