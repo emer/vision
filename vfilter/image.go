@@ -200,13 +200,13 @@ func EdgeAvg(tsr *etensor.Float32, padWidth int) float32 {
 	for y := 0; y < esz.Y; y++ {
 		oy := y + padWidth
 		avg += tsr.Value([]int{oy, padWidth})
-		avg += tsr.Value([]int{oy, padWidth + esz.X})
+		avg += tsr.Value([]int{oy, padWidth + esz.X - 1})
 	}
 	n += 2 * esz.X
 	for x := 0; x < esz.X; x++ {
 		ox := x + padWidth
 		avg += tsr.Value([]int{padWidth, ox})
-		avg += tsr.Value([]int{padWidth + esz.Y, ox})
+		avg += tsr.Value([]int{padWidth + esz.Y - 1, ox})
 	}
 	n += 2 * esz.X
 	return avg / float32(n)
