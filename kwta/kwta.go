@@ -95,7 +95,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 
 	inhib.Ge.Init()
 	for i, ge := range raws {
-		inhib.Ge.UpdateVal(ge, i)
+		inhib.Ge.UpdateVal(ge, int32(i))
 	}
 	inhib.Ge.CalcAvg()
 
@@ -112,7 +112,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 			ge := raws[i]
 			nwAct, delAct := kwta.ActFmG(geThr, ge, acts[i])
 			maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
-			inhib.Act.UpdateVal(nwAct, i)
+			inhib.Act.UpdateVal(nwAct, int32(i))
 			acts[i] = nwAct
 		}
 		inhib.Act.CalcAvg()
@@ -177,8 +177,8 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 				for px := 0; px < plX; px++ {
 					idx := pui + ui
 					ge := raws[idx]
-					layInhib.Ge.UpdateVal(ge, idx)
-					plInhib.Ge.UpdateVal(ge, ui)
+					layInhib.Ge.UpdateVal(ge, int32(idx))
+					plInhib.Ge.UpdateVal(ge, int32(ui))
 					ui++
 				}
 			}
@@ -219,8 +219,8 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 						act := acts[idx]
 						nwAct, delAct := kwta.ActFmG(geThr, ge, act)
 						maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
-						layInhib.Act.UpdateVal(nwAct, idx)
-						plInhib.Act.UpdateVal(nwAct, ui)
+						layInhib.Act.UpdateVal(nwAct, int32(idx))
+						plInhib.Act.UpdateVal(nwAct, int32(ui))
 						acts[idx] = nwAct
 
 						ui++
