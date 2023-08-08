@@ -14,7 +14,11 @@ import (
 // represents angle of gabor or related feature.
 // This helps reduce redundancy of feature code.
 type NeighInhib struct {
-	On bool    `desc:"use neighborhood inhibition"`
+
+	// use neighborhood inhibition
+	On bool `desc:"use neighborhood inhibition"`
+
+	// [def: 0.6] overall value of the inhibition -- this is what is added into the unit Gi inhibition level
 	Gi float32 `def:"0.6" desc:"overall value of the inhibition -- this is what is added into the unit Gi inhibition level"`
 }
 

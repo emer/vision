@@ -32,15 +32,33 @@ func main() {
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
 type Vis struct {
-	ImageFile gi.FileName     `desc:"name of image file to operate on"`
-	DoG       dog.Filter      `desc:"LGN DoG filter parameters"`
-	Geom      vfilter.Geom    `inactive:"+" view:"inline" desc:"geometry of input, output"`
-	ImgSize   image.Point     `desc:"target image size to use -- images will be rescaled to this size"`
-	DoGTsr    etensor.Float32 `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
-	DoGTab    etable.Table    `view:"no-inline" desc:"DoG filter table (view only)"`
-	Img       image.Image     `view:"-" desc:"current input image"`
-	ImgTsr    etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
-	OutTsr    etensor.Float32 `view:"no-inline" desc:"DoG filter output tensor"`
+
+	// name of image file to operate on
+	ImageFile gi.FileName `desc:"name of image file to operate on"`
+
+	// LGN DoG filter parameters
+	DoG dog.Filter `desc:"LGN DoG filter parameters"`
+
+	// [view: inline] geometry of input, output
+	Geom vfilter.Geom `inactive:"+" view:"inline" desc:"geometry of input, output"`
+
+	// target image size to use -- images will be rescaled to this size
+	ImgSize image.Point `desc:"target image size to use -- images will be rescaled to this size"`
+
+	// [view: no-inline] DoG filter tensor -- has 3 filters (on, off, net)
+	DoGTsr etensor.Float32 `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
+
+	// [view: no-inline] DoG filter table (view only)
+	DoGTab etable.Table `view:"no-inline" desc:"DoG filter table (view only)"`
+
+	// [view: -] current input image
+	Img image.Image `view:"-" desc:"current input image"`
+
+	// [view: no-inline] input image as tensor
+	ImgTsr etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
+
+	// [view: no-inline] DoG filter output tensor
+	OutTsr etensor.Float32 `view:"no-inline" desc:"DoG filter output tensor"`
 }
 
 var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)

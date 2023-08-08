@@ -16,15 +16,33 @@ import (
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.
 type Filter struct {
-	On         bool    `desc:"is this filter active?"`
-	Wt         float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
-	Gain       float32 `viewif:"On" def:"8" desc:"overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
-	OnGain     float32 `viewif:"On" def:"1" desc:"gain for the on component of filter, only relevant for color-opponent DoG's"`
-	Size       int     `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
-	Spacing    int     `viewif:"On" desc:"how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
-	OnSig      float32 `viewif:"On" def:"0.125" desc:"gaussian sigma for the narrower On gaussian, in normalized units relative to Size"`
-	OffSig     float32 `viewif:"On" def:"0.25" desc:"gaussian sigma for the wider Off gaussian, in normalized units relative to Size"`
-	CircleEdge bool    `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
+
+	// is this filter active?
+	On bool `desc:"is this filter active?"`
+
+	// [viewif: On] how much relative weight does this filter have when combined with other filters
+	Wt float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
+
+	// [def: 8] [viewif: On] overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
+	Gain float32 `viewif:"On" def:"8" desc:"overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
+
+	// [def: 1] [viewif: On] gain for the on component of filter, only relevant for color-opponent DoG's
+	OnGain float32 `viewif:"On" def:"1" desc:"gain for the on component of filter, only relevant for color-opponent DoG's"`
+
+	// [viewif: On] size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
+	Size int `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
+
+	// [viewif: On] how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
+	Spacing int `viewif:"On" desc:"how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
+
+	// [def: 0.125] [viewif: On] gaussian sigma for the narrower On gaussian, in normalized units relative to Size
+	OnSig float32 `viewif:"On" def:"0.125" desc:"gaussian sigma for the narrower On gaussian, in normalized units relative to Size"`
+
+	// [def: 0.25] [viewif: On] gaussian sigma for the wider Off gaussian, in normalized units relative to Size
+	OffSig float32 `viewif:"On" def:"0.25" desc:"gaussian sigma for the wider Off gaussian, in normalized units relative to Size"`
+
+	// [def: true] [viewif: On] cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
+	CircleEdge bool `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
 }
 
 func (gf *Filter) Defaults() {

@@ -15,8 +15,12 @@ import (
 // than the lookup table!  In any case, it is all here and reasonably
 // accurate (mostly under 1.0e-4 according to testing)
 type SRGBToOp struct {
-	Levels int             `desc:"number of levels in the lookup table -- linear interpolation used"`
-	Table  etensor.Float32 `desc:"lookup table"`
+
+	// number of levels in the lookup table -- linear interpolation used
+	Levels int `desc:"number of levels in the lookup table -- linear interpolation used"`
+
+	// lookup table
+	Table etensor.Float32 `desc:"lookup table"`
 }
 
 // TheSRGBToOp is the instance of SRGBToOp to use

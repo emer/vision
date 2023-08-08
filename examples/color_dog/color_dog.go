@@ -33,20 +33,48 @@ func main() {
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
 type Vis struct {
-	ImageFile  gi.FileName                 `desc:"name of image file to operate on -- if macbeth or empty use the macbeth standard color test image"`
-	DoG        dog.Filter                  `desc:"LGN DoG filter parameters"`
-	DoGNames   []string                    `desc:"names of the dog gain sets -- for naming output data"`
-	DoGGains   []float32                   `desc:"overall gain factors, to compensate for diffs in OnGains"`
-	DoGOnGains []float32                   `desc:"OnGain factors -- 1 = perfect balance, otherwise has relative imbalance for capturing main effects"`
-	Geom       vfilter.Geom                `inactive:"+" view:"inline" desc:"geometry of input, output"`
-	ImgSize    image.Point                 `desc:"target image size to use -- images will be rescaled to this size"`
-	DoGTsr     etensor.Float32             `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
-	DoGTab     etable.Table                `view:"no-inline" desc:"DoG filter table (view only)"`
-	Img        image.Image                 `view:"-" desc:"current input image"`
-	ImgTsr     etensor.Float32             `view:"no-inline" desc:"input image as RGB tensor"`
-	ImgLMS     etensor.Float32             `view:"no-inline" desc:"LMS components + opponents tensor version of image"`
-	OutAll     etensor.Float32             `view:"no-inline" desc:"output from 3 dogs with different tuning"`
-	OutTsrs    map[string]*etensor.Float32 `view:"no-inline" desc:"DoG filter output tensors"`
+
+	// name of image file to operate on -- if macbeth or empty use the macbeth standard color test image
+	ImageFile gi.FileName `desc:"name of image file to operate on -- if macbeth or empty use the macbeth standard color test image"`
+
+	// LGN DoG filter parameters
+	DoG dog.Filter `desc:"LGN DoG filter parameters"`
+
+	// names of the dog gain sets -- for naming output data
+	DoGNames []string `desc:"names of the dog gain sets -- for naming output data"`
+
+	// overall gain factors, to compensate for diffs in OnGains
+	DoGGains []float32 `desc:"overall gain factors, to compensate for diffs in OnGains"`
+
+	// OnGain factors -- 1 = perfect balance, otherwise has relative imbalance for capturing main effects
+	DoGOnGains []float32 `desc:"OnGain factors -- 1 = perfect balance, otherwise has relative imbalance for capturing main effects"`
+
+	// [view: inline] geometry of input, output
+	Geom vfilter.Geom `inactive:"+" view:"inline" desc:"geometry of input, output"`
+
+	// target image size to use -- images will be rescaled to this size
+	ImgSize image.Point `desc:"target image size to use -- images will be rescaled to this size"`
+
+	// [view: no-inline] DoG filter tensor -- has 3 filters (on, off, net)
+	DoGTsr etensor.Float32 `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
+
+	// [view: no-inline] DoG filter table (view only)
+	DoGTab etable.Table `view:"no-inline" desc:"DoG filter table (view only)"`
+
+	// [view: -] current input image
+	Img image.Image `view:"-" desc:"current input image"`
+
+	// [view: no-inline] input image as RGB tensor
+	ImgTsr etensor.Float32 `view:"no-inline" desc:"input image as RGB tensor"`
+
+	// [view: no-inline] LMS components + opponents tensor version of image
+	ImgLMS etensor.Float32 `view:"no-inline" desc:"LMS components + opponents tensor version of image"`
+
+	// [view: no-inline] output from 3 dogs with different tuning
+	OutAll etensor.Float32 `view:"no-inline" desc:"output from 3 dogs with different tuning"`
+
+	// [view: no-inline] DoG filter output tensors
+	OutTsrs map[string]*etensor.Float32 `view:"no-inline" desc:"DoG filter output tensors"`
 }
 
 var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)

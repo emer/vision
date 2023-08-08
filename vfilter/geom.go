@@ -8,13 +8,27 @@ import "image"
 
 // Geom contains the filtering geometry info for a given filter pass.
 type Geom struct {
-	In      image.Point `desc:"size of input -- computed from image or set"`
-	Out     image.Point `desc:"size of output -- computed"`
-	Border  image.Point `desc:"starting border into image -- must be >= FiltRt"`
+
+	// size of input -- computed from image or set
+	In image.Point `desc:"size of input -- computed from image or set"`
+
+	// size of output -- computed
+	Out image.Point `desc:"size of output -- computed"`
+
+	// starting border into image -- must be >= FiltRt
+	Border image.Point `desc:"starting border into image -- must be >= FiltRt"`
+
+	// spacing -- number of pixels to skip in each direction
 	Spacing image.Point `desc:"spacing -- number of pixels to skip in each direction"`
-	FiltSz  image.Point `desc:"full size of filter"`
-	FiltLt  image.Point `desc:"computed size of left/top size of filter"`
-	FiltRt  image.Point `desc:"computed size of right/bottom size of filter (FiltSz - FiltLeft)"`
+
+	// full size of filter
+	FiltSz image.Point `desc:"full size of filter"`
+
+	// computed size of left/top size of filter
+	FiltLt image.Point `desc:"computed size of left/top size of filter"`
+
+	// computed size of right/bottom size of filter (FiltSz - FiltLeft)
+	FiltRt image.Point `desc:"computed size of right/bottom size of filter (FiltSz - FiltLeft)"`
 }
 
 // Set sets the basic geometry params

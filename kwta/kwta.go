@@ -18,18 +18,42 @@ import (
 // (feedforward & feedback) inhibition that results in roughly
 // k-Winner-Take-All behavior.
 type KWTA struct {
-	On         bool        `desc:"whether to run kWTA or not"`
-	Iters      int         `desc:"maximum number of iterations to perform"`
-	DelActThr  float32     `def:"0.005" desc:"threshold on delta-activation (change in activation) for stopping updating of activations"`
-	LayFFFB    fffb.Params `view:"inline" desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
-	PoolFFFB   fffb.Params `view:"inline" desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
-	XX1        nxx1.Params `view:"inline" desc:"Noisy X/X+1 rate code activation function parameters"`
-	ActTau     float32     `def:"3" desc:"time constant for integrating activation"`
-	Gbar       chans.Chans `view:"inline" desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
-	Erev       chans.Chans `view:"inline" desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
+
+	// whether to run kWTA or not
+	On bool `desc:"whether to run kWTA or not"`
+
+	// maximum number of iterations to perform
+	Iters int `desc:"maximum number of iterations to perform"`
+
+	// [def: 0.005] threshold on delta-activation (change in activation) for stopping updating of activations
+	DelActThr float32 `def:"0.005" desc:"threshold on delta-activation (change in activation) for stopping updating of activations"`
+
+	// [view: inline] layer-level feedforward & feedback inhibition -- applied over entire set of values
+	LayFFFB fffb.Params `view:"inline" desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
+
+	// [view: inline] pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)
+	PoolFFFB fffb.Params `view:"inline" desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
+
+	// [view: inline] Noisy X/X+1 rate code activation function parameters
+	XX1 nxx1.Params `view:"inline" desc:"Noisy X/X+1 rate code activation function parameters"`
+
+	// [def: 3] time constant for integrating activation
+	ActTau float32 `def:"3" desc:"time constant for integrating activation"`
+
+	// [view: inline] [Defaults: 1, .2, 1, 1] maximal conductances levels for channels
+	Gbar chans.Chans `view:"inline" desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
+
+	// [view: inline] [Defaults: 1, .3, .25, .1] reversal potentials for each channel
+	Erev chans.Chans `view:"inline" desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
+
+	// [view: -] Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
 	ErevSubThr chans.Chans `inactive:"+" view:"-" desc:"Erev - Act.Thr for each channel -- used in computing GeThrFmG among others"`
+
+	// [view: -] Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
 	ThrSubErev chans.Chans `inactive:"+" view:"-" json:"-" xml:"-" desc:"Act.Thr - Erev for each channel -- used in computing GeThrFmG among others"`
-	ActDt      float32     `view:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
+
+	// [view: -]
+	ActDt float32 `view:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
 }
 
 func (kwta *KWTA) Defaults() {
