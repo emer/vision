@@ -5,8 +5,8 @@
 package colorspace
 
 import (
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // SRGBToOp implements a lookup-table for the conversion of
@@ -17,10 +17,10 @@ import (
 type SRGBToOp struct {
 
 	// number of levels in the lookup table -- linear interpolation used
-	Levels int `desc:"number of levels in the lookup table -- linear interpolation used"`
+	Levels int
 
 	// lookup table
-	Table etensor.Float32 `desc:"lookup table"`
+	Table etensor.Float32
 }
 
 // TheSRGBToOp is the instance of SRGBToOp to use

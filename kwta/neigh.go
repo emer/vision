@@ -5,8 +5,8 @@
 package kwta
 
 import (
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // NeighInhib adds an additional inhibition factor based on the same
@@ -16,10 +16,10 @@ import (
 type NeighInhib struct {
 
 	// use neighborhood inhibition
-	On bool `desc:"use neighborhood inhibition"`
+	On bool
 
-	// [def: 0.6] overall value of the inhibition -- this is what is added into the unit Gi inhibition level
-	Gi float32 `def:"0.6" desc:"overall value of the inhibition -- this is what is added into the unit Gi inhibition level"`
+	// overall value of the inhibition -- this is what is added into the unit Gi inhibition level
+	Gi float32 `def:"0.6"`
 }
 
 var (

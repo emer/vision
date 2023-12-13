@@ -9,40 +9,40 @@ forms of signal processing
 package dog
 
 import (
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.
 type Filter struct {
 
 	// is this filter active?
-	On bool `desc:"is this filter active?"`
+	On bool
 
-	// [viewif: On] how much relative weight does this filter have when combined with other filters
-	Wt float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
+	// how much relative weight does this filter have when combined with other filters
+	Wt float32 `viewif:"On"`
 
-	// [def: 8] [viewif: On] overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
-	Gain float32 `viewif:"On" def:"8" desc:"overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
+	// overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
+	Gain float32 `viewif:"On" def:"8"`
 
-	// [def: 1] [viewif: On] gain for the on component of filter, only relevant for color-opponent DoG's
-	OnGain float32 `viewif:"On" def:"1" desc:"gain for the on component of filter, only relevant for color-opponent DoG's"`
+	// gain for the on component of filter, only relevant for color-opponent DoG's
+	OnGain float32 `viewif:"On" def:"1"`
 
-	// [viewif: On] size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
-	Size int `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
+	// size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
+	Size int `viewif:"On"`
 
-	// [viewif: On] how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
-	Spacing int `viewif:"On" desc:"how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
+	// how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
+	Spacing int `viewif:"On"`
 
-	// [def: 0.125] [viewif: On] gaussian sigma for the narrower On gaussian, in normalized units relative to Size
-	OnSig float32 `viewif:"On" def:"0.125" desc:"gaussian sigma for the narrower On gaussian, in normalized units relative to Size"`
+	// gaussian sigma for the narrower On gaussian, in normalized units relative to Size
+	OnSig float32 `viewif:"On" def:"0.125"`
 
-	// [def: 0.25] [viewif: On] gaussian sigma for the wider Off gaussian, in normalized units relative to Size
-	OffSig float32 `viewif:"On" def:"0.25" desc:"gaussian sigma for the wider Off gaussian, in normalized units relative to Size"`
+	// gaussian sigma for the wider Off gaussian, in normalized units relative to Size
+	OffSig float32 `viewif:"On" def:"0.25"`
 
-	// [def: true] [viewif: On] cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
-	CircleEdge bool `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
+	// cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
+	CircleEdge bool `viewif:"On" def:"true"`
 }
 
 func (gf *Filter) Defaults() {

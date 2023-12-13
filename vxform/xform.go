@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/emer/emergent/env"
+	"github.com/emer/emergent/v2/env"
 )
 
 // XForm represents current and previous visual transformation values
@@ -18,16 +18,16 @@ import (
 type XForm struct {
 
 	// current, prv X-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)
-	TransX env.CurPrvF32 `desc:"current, prv X-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)"`
+	TransX env.CurPrvF32
 
 	// current, prv Y-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)
-	TransY env.CurPrvF32 `desc:"current, prv Y-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)"`
+	TransY env.CurPrvF32
 
 	// current, prv scale value
-	Scale env.CurPrvF32 `desc:"current, prv scale value"`
+	Scale env.CurPrvF32
 
 	// current, prv rotation value, in degrees
-	Rot env.CurPrvF32 `desc:"current, prv rotation value, in degrees"`
+	Rot env.CurPrvF32
 }
 
 // Set updates current values

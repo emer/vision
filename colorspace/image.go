@@ -7,8 +7,8 @@ package colorspace
 import (
 	"image"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/vision/vfilter"
+	"github.com/emer/vision/v2/vfilter"
+	"goki.dev/etable/v2/etensor"
 )
 
 // RGBImgLMSComps converts an RGB image to corresponding LMS components

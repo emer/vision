@@ -9,8 +9,8 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/vision/nproc"
+	"github.com/emer/vision/v2/nproc"
+	"goki.dev/etable/v2/etensor"
 )
 
 // UnPool performs inverse max-pooling over given pool size and spacing.

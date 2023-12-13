@@ -8,8 +8,8 @@ import (
 	"image"
 	"image/color"
 
-	"github.com/emer/etable/etensor"
-	"github.com/goki/gi/gist"
+	"goki.dev/colors"
+	"goki.dev/etable/v2/etensor"
 )
 
 // RGBToTensor converts an RGB input image to an RGB etensor
@@ -29,9 +29,7 @@ func RGBToTensor(img image.Image, tsr *etensor.Float32, padWidth int, topZero bo
 				sy = (sz.Y - 1) - y
 			}
 			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
-			var cl gist.Color
-			cl.SetColor(cv)
-			r, g, b, _ := cl.ToFloat32()
+			r, g, b, _ := colors.ToFloat32(cv)
 			tsr.Set([]int{0, y + padWidth, x + padWidth}, r)
 			tsr.Set([]int{1, y + padWidth, x + padWidth}, g)
 			tsr.Set([]int{2, y + padWidth, x + padWidth}, b)
@@ -93,9 +91,7 @@ func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool
 				sy = (sz.Y - 1) - y
 			}
 			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
-			var cl gist.Color
-			cl.SetColor(cv)
-			r, g, b, _ := cl.ToFloat32()
+			r, g, b, _ := colors.ToFloat32(cv)
 			gv := (r + g + b) / 3
 			tsr.Set([]int{y + padWidth, x + padWidth}, gv)
 		}

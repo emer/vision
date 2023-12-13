@@ -8,7 +8,7 @@ import (
 	"image"
 	"log"
 
-	"github.com/emer/etable/etensor"
+	"goki.dev/etable/v2/etensor"
 )
 
 // Deconv performs reverse convolution of filter -- given output of filter,

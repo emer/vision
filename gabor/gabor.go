@@ -11,9 +11,9 @@ package gabor
 import (
 	"math"
 
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // gabor.Filter specifies a gabor filter function,
@@ -22,37 +22,37 @@ import (
 type Filter struct {
 
 	// is this filter active?
-	On bool `desc:"is this filter active?"`
+	On bool
 
-	// [viewif: On] how much relative weight does this filter have when combined with other filters
-	Wt float32 `viewif:"On" desc:"how much relative weight does this filter have when combined with other filters"`
+	// how much relative weight does this filter have when combined with other filters
+	Wt float32 `viewif:"On"`
 
-	// [def: 2] [viewif: On] overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
-	Gain float32 `viewif:"On" def:"2" desc:"overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)"`
+	// overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
+	Gain float32 `viewif:"On" def:"2"`
 
-	// [viewif: On] size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
-	Size int `viewif:"On" desc:"size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6"`
+	// size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
+	Size int `viewif:"On"`
 
-	// [viewif: On] wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)
-	WvLen float32 `viewif:"On" desc:"wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)"`
+	// wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)
+	WvLen float32 `viewif:"On"`
 
-	// [viewif: On] how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
-	Spacing int `viewif:"On" desc:"how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom"`
+	// how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
+	Spacing int `viewif:"On"`
 
-	// [def: 0.3] [viewif: On] gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size
-	SigLen float32 `viewif:"On" def:"0.3" desc:"gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size"`
+	// gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size
+	SigLen float32 `viewif:"On" def:"0.3"`
 
-	// [def: 0.15,0.2] [viewif: On] gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size
-	SigWd float32 `viewif:"On" def:"0.15,0.2" desc:"gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size"`
+	// gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size
+	SigWd float32 `viewif:"On" def:"0.15,0.2"`
 
-	// [def: 0,90] [viewif: On] phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave
-	Phase float32 `viewif:"On" def:"0,90" desc:"phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave"`
+	// phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave
+	Phase float32 `viewif:"On" def:"0,90"`
 
-	// [def: true] [viewif: On] cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
-	CircleEdge bool `viewif:"On" def:"true" desc:"cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric"`
+	// cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
+	CircleEdge bool `viewif:"On" def:"true"`
 
-	// [def: 4] [viewif: On] number of different angles of overall gabor filter orientation to use -- first angle is always horizontal
-	NAngles int `viewif:"On" def:"4" desc:"number of different angles of overall gabor filter orientation to use -- first angle is always horizontal"`
+	// number of different angles of overall gabor filter orientation to use -- first angle is always horizontal
+	NAngles int `viewif:"On" def:"4"`
 }
 
 func (gf *Filter) Defaults() {

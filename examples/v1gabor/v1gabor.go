@@ -4,108 +4,107 @@
 
 package main
 
+//go:generate goki generate
+
 import (
 	"image"
 	"log"
 
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	_ "github.com/emer/etable/etview" // include to get gui views
-	"github.com/emer/etable/norm"
-	"github.com/emer/leabra/fffb"
-	"github.com/emer/vision/gabor"
-	"github.com/emer/vision/kwta"
-	"github.com/emer/vision/v1complex"
-	"github.com/emer/vision/vfilter"
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gimain"
-	"github.com/goki/gi/giv"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"github.com/emer/vision/v2/fffb"
+	"github.com/emer/vision/v2/gabor"
+	"github.com/emer/vision/v2/kwta"
+	"github.com/emer/vision/v2/v1complex"
+	"github.com/emer/vision/v2/vfilter"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	_ "goki.dev/etable/v2/etview" // include to get gui views
+	"goki.dev/etable/v2/norm"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/gimain"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/grows/images"
 )
 
-// this is the stub main for gogi that calls our actual
-// mainrun function, at end of file
-func main() {
-	gimain.Main(func() {
-		mainrun()
-	})
+func main() { gimain.Run(app) }
+
+func app() {
+	vi := &Vis{}
+	vi.Defaults()
+	vi.Filter()
+	vi.ConfigGUI()
 }
 
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
-type Vis struct {
+type Vis struct { //gti:add
 
 	// name of image file to operate on
-	ImageFile gi.FileName `desc:"name of image file to operate on"`
+	ImageFile gi.FileName
 
 	// V1 simple gabor filter parameters
-	V1sGabor gabor.Filter `desc:"V1 simple gabor filter parameters"`
+	V1sGabor gabor.Filter
 
-	// [view: inline] geometry of input, output for V1 simple-cell processing
-	V1sGeom vfilter.Geom `inactive:"+" view:"inline" desc:"geometry of input, output for V1 simple-cell processing"`
+	// geometry of input, output for V1 simple-cell processing
+	V1sGeom vfilter.Geom `edit:"-"`
 
 	// neighborhood inhibition for V1s -- each unit gets inhibition from same feature in nearest orthogonal neighbors -- reduces redundancy of feature code
-	V1sNeighInhib kwta.NeighInhib `desc:"neighborhood inhibition for V1s -- each unit gets inhibition from same feature in nearest orthogonal neighbors -- reduces redundancy of feature code"`
+	V1sNeighInhib kwta.NeighInhib
 
 	// kwta parameters for V1s
-	V1sKWTA kwta.KWTA `desc:"kwta parameters for V1s"`
+	V1sKWTA kwta.KWTA
 
 	// target image size to use -- images will be rescaled to this size
-	ImgSize image.Point `desc:"target image size to use -- images will be rescaled to this size"`
+	ImgSize image.Point
 
-	// [view: no-inline] V1 simple gabor filter tensor
-	V1sGaborTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter tensor"`
+	// V1 simple gabor filter tensor
+	V1sGaborTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter table (view only)
-	V1sGaborTab etable.Table `view:"no-inline" desc:"V1 simple gabor filter table (view only)"`
+	// V1 simple gabor filter table (view only)
+	V1sGaborTab etable.Table `view:"no-inline"`
 
-	// [view: -] current input image
-	Img image.Image `view:"-" desc:"current input image"`
+	// current input image
+	Img image.Image `view:"-"`
 
-	// [view: no-inline] input image as tensor
-	ImgTsr etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
+	// input image as tensor
+	ImgTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] input image reconstructed from V1s tensor
-	ImgFmV1sTsr etensor.Float32 `view:"no-inline" desc:"input image reconstructed from V1s tensor"`
+	// input image reconstructed from V1s tensor
+	ImgFmV1sTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output tensor
-	V1sTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output tensor"`
+	// V1 simple gabor filter output tensor
+	V1sTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple extra Gi from neighbor inhibition tensor
-	V1sExtGiTsr etensor.Float32 `view:"no-inline" desc:"V1 simple extra Gi from neighbor inhibition tensor"`
+	// V1 simple extra Gi from neighbor inhibition tensor
+	V1sExtGiTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output, kwta output tensor
-	V1sKwtaTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, kwta output tensor"`
+	// V1 simple gabor filter output, kwta output tensor
+	V1sKwtaTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor
-	V1sPoolTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor"`
+	// V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor
+	V1sPoolTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output, un-max-pooled 2x2 of V1sPool tensor
-	V1sUnPoolTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, un-max-pooled 2x2 of V1sPool tensor"`
+	// V1 simple gabor filter output, un-max-pooled 2x2 of V1sPool tensor
+	V1sUnPoolTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output, angle-only features tensor
-	V1sAngOnlyTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, angle-only features tensor"`
+	// V1 simple gabor filter output, angle-only features tensor
+	V1sAngOnlyTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor
-	V1sAngPoolTsr etensor.Float32 `view:"no-inline" desc:"V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor"`
+	// V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor
+	V1sAngPoolTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 complex length sum filter output tensor
-	V1cLenSumTsr etensor.Float32 `view:"no-inline" desc:"V1 complex length sum filter output tensor"`
+	// V1 complex length sum filter output tensor
+	V1cLenSumTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] V1 complex end stop filter output tensor
-	V1cEndStopTsr etensor.Float32 `view:"no-inline" desc:"V1 complex end stop filter output tensor"`
+	// V1 complex end stop filter output tensor
+	V1cEndStopTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total
-	V1AllTsr etensor.Float32 `view:"no-inline" desc:"Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total"`
+	// Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total
+	V1AllTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] inhibition values for V1s KWTA
-	V1sInhibs fffb.Inhibs `view:"no-inline" desc:"inhibition values for V1s KWTA"`
+	// inhibition values for V1s KWTA
+	V1sInhibs fffb.Inhibs `view:"no-inline"`
 }
-
-var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)
 
 func (vi *Vis) Defaults() {
 	vi.ImageFile = gi.FileName("side-tee-128.png")
@@ -129,9 +128,9 @@ func (vi *Vis) Defaults() {
 
 // OpenImage opens given filename as current image Img
 // and converts to a float32 tensor for processing
-func (vi *Vis) OpenImage(filepath string) error {
+func (vi *Vis) OpenImage(filepath string) error { //gti:add
 	var err error
-	vi.Img, err = gi.OpenImage(filepath)
+	vi.Img, _, err = images.Open(filepath)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -207,7 +206,7 @@ func (vi *Vis) V1All() {
 
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
-func (vi *Vis) Filter() error {
+func (vi *Vis) Filter() error { //gti:add
 	err := vi.OpenImage(string(vi.ImageFile))
 	if err != nil {
 		log.Println(err)
@@ -220,81 +219,23 @@ func (vi *Vis) Filter() error {
 	return nil
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // 		Gui
 
-// ConfigGui configures the GoGi gui interface for this Vis
-func (vi *Vis) ConfigGui() *gi.Window {
-	width := 1600
-	height := 1200
+func (vi *Vis) ConfigGUI() *gi.Body {
+	b := gi.NewAppBody("v1gabor").SetTitle("V1 Gabor Filtering")
+	b.App().About = `This demonstrates basic V1 Gabor Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`
 
-	gi.SetAppName("v1gabor")
-	gi.SetAppAbout(`This demonstrates basic V1 Gabor Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`)
+	giv.NewStructView(b, "sv").SetStruct(vi)
 
-	win := gi.NewMainWindow("v1gabor", "V1 Gabor Filtering", width, height)
-	// vi.Win = win
-
-	vp := win.WinViewport2D()
-	updt := vp.UpdateStart()
-
-	mfr := win.SetMainFrame()
-
-	tbar := gi.AddNewToolBar(mfr, "tbar")
-	tbar.SetStretchMaxWidth()
-	// vi.ToolBar = tbar
-
-	split := gi.AddNewSplitView(mfr, "split")
-	split.Dim = mat32.X
-	split.SetStretchMax()
-
-	sv := giv.AddNewStructView(split, "sv")
-	sv.Viewport = vp
-	sv.SetStruct(vi)
-
-	split.SetSplits(1)
-
-	// main menu
-	appnm := gi.AppName()
-	mmen := win.MainMenu
-	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
-
-	amen := win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-	amen.Menu.AddAppMenu(win)
-
-	emen := win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
-	emen.Menu.AddCopyCutPaste(win)
-
-	gi.SetQuitReqFunc(func() {
-		gi.Quit()
-	})
-	win.SetCloseReqFunc(func(w *gi.Window) {
-		gi.Quit()
-	})
-	win.SetCloseCleanFunc(func(w *gi.Window) {
-		go gi.Quit() // once main window is closed, quit
+	b.AddAppBar(func(tb *gi.Toolbar) {
+		giv.NewFuncButton(tb, vi.Filter)
+		// gi.NewSeparator(tb)
+		// vi.Img.ConfigToolbar(tb)
+		// gi.NewSeparator(tb)
+		// vi.OutAll.ConfigToolbar(tb)
 	})
 
-	vp.UpdateEndNoSig(updt)
-
-	win.MainMenuUpdated()
-	return win
-}
-
-// These props create interactive toolbar for GUI
-var VisProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Filter", ki.Props{
-			"desc": "run filter methods on current ImageFile image",
-			"icon": "updt",
-		}},
-	},
-}
-
-var TheVis Vis
-
-func mainrun() {
-	TheVis.Defaults()
-	TheVis.Filter()
-	win := TheVis.ConfigGui()
-	win.StartEventLoop()
+	b.NewWindow().Run().Wait()
+	return b
 }

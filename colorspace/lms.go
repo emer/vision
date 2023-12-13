@@ -4,21 +4,15 @@
 
 package colorspace
 
+//go:generate goki generate
+
 import (
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // LMSComponents are different components of the LMS space
 // including opponent contrasts and grey
-type LMSComponents int
-
-//go:generate stringer -type=LMSComponents
-
-var KiT_LMSComponents = kit.Enums.AddEnum(LMSComponentsN, kit.NotBitFlag, nil)
-
-func (ev LMSComponents) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *LMSComponents) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type LMSComponents int32 //enums:enum
 
 const (
 	// Long wavelength = Red component
@@ -41,22 +35,12 @@ const (
 
 	// achromatic response (grey scale lightness)
 	GREY
-
-	// number of components
-	LMSComponentsN
 )
 
 // Opponents enumerates the three primary opponency channels:
 // WhiteBlack, RedGreen, BlueYellow
 // using colloquial "everyday" terms.
-type Opponents int
-
-//go:generate stringer -type=Opponents
-
-var KiT_Opponents = kit.Enums.AddEnum(OpponentsN, kit.NotBitFlag, nil)
-
-func (ev Opponents) MarshalJSON() ([]byte, error)  { return kit.EnumMarshalJSON(ev) }
-func (ev *Opponents) UnmarshalJSON(b []byte) error { return kit.EnumUnmarshalJSON(ev, b) }
+type Opponents int32 //enums:enum
 
 const (
 	// White vs. Black greyscale
@@ -67,9 +51,6 @@ const (
 
 	// Blue vs. Yellow
 	BlueYellow
-
-	// number of opponents
-	OpponentsN
 )
 
 ///////////////////////////////////

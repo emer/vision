@@ -7,11 +7,10 @@ package kwta
 import (
 	"log"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/leabra/chans"
-	"github.com/emer/leabra/fffb"
-	"github.com/emer/leabra/nxx1"
-	"github.com/goki/mat32"
+	"github.com/emer/vision/v2/fffb"
+	"github.com/emer/vision/v2/nxx1"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/mat32/v2"
 )
 
 // KWTA contains all the parameters needed for computing FFFB
@@ -20,39 +19,39 @@ import (
 type KWTA struct {
 
 	// whether to run kWTA or not
-	On bool `desc:"whether to run kWTA or not"`
+	On bool
 
 	// maximum number of iterations to perform
-	Iters int `desc:"maximum number of iterations to perform"`
+	Iters int
 
-	// [def: 0.005] threshold on delta-activation (change in activation) for stopping updating of activations
-	DelActThr float32 `def:"0.005" desc:"threshold on delta-activation (change in activation) for stopping updating of activations"`
+	// threshold on delta-activation (change in activation) for stopping updating of activations
+	DelActThr float32 `def:"0.005"`
 
-	// [view: inline] layer-level feedforward & feedback inhibition -- applied over entire set of values
-	LayFFFB fffb.Params `view:"inline" desc:"layer-level feedforward & feedback inhibition -- applied over entire set of values"`
+	// layer-level feedforward & feedback inhibition -- applied over entire set of values
+	LayFFFB fffb.Params `view:"inline"`
 
-	// [view: inline] pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)
-	PoolFFFB fffb.Params `view:"inline" desc:"pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)"`
+	// pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)
+	PoolFFFB fffb.Params `view:"inline"`
 
-	// [view: inline] Noisy X/X+1 rate code activation function parameters
-	XX1 nxx1.Params `view:"inline" desc:"Noisy X/X+1 rate code activation function parameters"`
+	// Noisy X/X+1 rate code activation function parameters
+	XX1 nxx1.Params `view:"inline"`
 
-	// [def: 3] time constant for integrating activation
-	ActTau float32 `def:"3" desc:"time constant for integrating activation"`
+	// time constant for integrating activation
+	ActTau float32 `def:"3"`
 
-	// [view: inline] [Defaults: 1, .2, 1, 1] maximal conductances levels for channels
-	Gbar chans.Chans `view:"inline" desc:"[Defaults: 1, .2, 1, 1] maximal conductances levels for channels"`
+	// maximal conductances levels for channels
+	Gbar Chans `view:"inline"`
 
-	// [view: inline] [Defaults: 1, .3, .25, .1] reversal potentials for each channel
-	Erev chans.Chans `view:"inline" desc:"[Defaults: 1, .3, .25, .1] reversal potentials for each channel"`
+	// reversal potentials for each channel
+	Erev Chans `view:"inline"`
 
-	// [view: -] Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
-	ErevSubThr chans.Chans `inactive:"+" view:"-" desc:"Erev - Act.Thr for each channel -- used in computing GeThrFmG among others"`
+	// Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
+	ErevSubThr Chans `inactive:"+" view:"-"`
 
-	// [view: -] Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
-	ThrSubErev chans.Chans `inactive:"+" view:"-" json:"-" xml:"-" desc:"Act.Thr - Erev for each channel -- used in computing GeThrFmG among others"`
+	// Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
+	ThrSubErev Chans `inactive:"+" view:"-" json:"-" xml:"-"`
 
-	// [view: -]
+	//
 	ActDt float32 `view:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
 }
 

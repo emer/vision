@@ -7,9 +7,9 @@ package vfilter
 import (
 	"math"
 
-	"github.com/emer/etable/etensor"
-	"github.com/emer/etable/norm"
-	"github.com/goki/mat32"
+	"goki.dev/etable/v2/etensor"
+	"goki.dev/etable/v2/norm"
+	"goki.dev/mat32/v2"
 )
 
 // TensorLogNorm32 computes 1 + log of all the numbers and then does

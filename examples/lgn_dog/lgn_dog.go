@@ -4,64 +4,64 @@
 
 package main
 
+//go:generate goki generate
+
 import (
 	"image"
 	"log"
 
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/emer/etable/etable"
-	"github.com/emer/etable/etensor"
-	_ "github.com/emer/etable/etview" // include to get gui views
-	"github.com/emer/vision/dog"
-	"github.com/emer/vision/vfilter"
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gimain"
-	"github.com/goki/gi/giv"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
+	"github.com/emer/vision/v2/dog"
+	"github.com/emer/vision/v2/vfilter"
+	"goki.dev/etable/v2/etable"
+	"goki.dev/etable/v2/etensor"
+	_ "goki.dev/etable/v2/etview" // include to get gui views
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/gimain"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/grows/images"
 )
 
-// this is the stub main for gogi that calls our actual
-// mainrun function, at end of file
-func main() {
-	gimain.Main(func() {
-		mainrun()
-	})
+func main() { gimain.Run(app) }
+
+func app() {
+	vi := &Vis{}
+	vi.Defaults()
+	vi.Filter()
+	vi.ConfigGUI()
 }
 
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
-type Vis struct {
+type Vis struct { //gti:add
 
 	// name of image file to operate on
-	ImageFile gi.FileName `desc:"name of image file to operate on"`
+	ImageFile gi.FileName
 
 	// LGN DoG filter parameters
-	DoG dog.Filter `desc:"LGN DoG filter parameters"`
+	DoG dog.Filter
 
-	// [view: inline] geometry of input, output
-	Geom vfilter.Geom `inactive:"+" view:"inline" desc:"geometry of input, output"`
+	// geometry of input, output
+	Geom vfilter.Geom `edit:"-"`
 
 	// target image size to use -- images will be rescaled to this size
-	ImgSize image.Point `desc:"target image size to use -- images will be rescaled to this size"`
+	ImgSize image.Point
 
-	// [view: no-inline] DoG filter tensor -- has 3 filters (on, off, net)
-	DoGTsr etensor.Float32 `view:"no-inline" desc:"DoG filter tensor -- has 3 filters (on, off, net)"`
+	// DoG filter tensor -- has 3 filters (on, off, net)
+	DoGTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] DoG filter table (view only)
-	DoGTab etable.Table `view:"no-inline" desc:"DoG filter table (view only)"`
+	// DoG filter table (view only)
+	DoGTab etable.Table `view:"no-inline"`
 
-	// [view: -] current input image
-	Img image.Image `view:"-" desc:"current input image"`
+	// current input image
+	Img image.Image `view:"-"`
 
-	// [view: no-inline] input image as tensor
-	ImgTsr etensor.Float32 `view:"no-inline" desc:"input image as tensor"`
+	// input image as tensor
+	ImgTsr etensor.Float32 `view:"no-inline"`
 
-	// [view: no-inline] DoG filter output tensor
-	OutTsr etensor.Float32 `view:"no-inline" desc:"DoG filter output tensor"`
+	// DoG filter output tensor
+	OutTsr etensor.Float32 `view:"no-inline"`
 }
-
-var KiT_Vis = kit.Types.AddType(&Vis{}, VisProps)
 
 func (vi *Vis) Defaults() {
 	vi.ImageFile = gi.FileName("side-tee-128.png")
@@ -83,9 +83,9 @@ func (vi *Vis) Defaults() {
 
 // OpenImage opens given filename as current image Img
 // and converts to a float32 tensor for processing
-func (vi *Vis) OpenImage(filepath string) error {
+func (vi *Vis) OpenImage(filepath string) error { //gti:add
 	var err error
-	vi.Img, err = gi.OpenImage(filepath)
+	vi.Img, _, err = images.Open(filepath)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -111,7 +111,7 @@ func (vi *Vis) LGNDoG() {
 
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
-func (vi *Vis) Filter() error {
+func (vi *Vis) Filter() error { //gti:add
 	err := vi.OpenImage(string(vi.ImageFile))
 	if err != nil {
 		log.Println(err)
@@ -121,81 +121,23 @@ func (vi *Vis) Filter() error {
 	return nil
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // 		Gui
 
-// ConfigGui configures the GoGi gui interface for this Vis
-func (vi *Vis) ConfigGui() *gi.Window {
-	width := 1600
-	height := 1200
+func (vi *Vis) ConfigGUI() *gi.Body {
+	b := gi.NewAppBody("lgn_dog").SetTitle("LGN DoG Filtering")
+	b.App().About = `This demonstrates LGN-level Difference of Gaussian Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`
 
-	gi.SetAppName("v1gabor")
-	gi.SetAppAbout(`This demonstrates basic V1 Gabor Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`)
+	giv.NewStructView(b, "sv").SetStruct(vi)
 
-	win := gi.NewMainWindow("v1gabor", "V1 Gabor Filtering", width, height)
-	// vi.Win = win
-
-	vp := win.WinViewport2D()
-	updt := vp.UpdateStart()
-
-	mfr := win.SetMainFrame()
-
-	tbar := gi.AddNewToolBar(mfr, "tbar")
-	tbar.SetStretchMaxWidth()
-	// vi.ToolBar = tbar
-
-	split := gi.AddNewSplitView(mfr, "split")
-	split.Dim = gi.X
-	split.SetStretchMax()
-
-	sv := giv.AddNewStructView(split, "sv")
-	sv.Viewport = vp
-	sv.SetStruct(vi)
-
-	split.SetSplits(1)
-
-	// main menu
-	appnm := gi.AppName()
-	mmen := win.MainMenu
-	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
-
-	amen := win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-	amen.Menu.AddAppMenu(win)
-
-	emen := win.MainMenu.ChildByName("Edit", 1).(*gi.Action)
-	emen.Menu.AddCopyCutPaste(win)
-
-	gi.SetQuitReqFunc(func() {
-		gi.Quit()
-	})
-	win.SetCloseReqFunc(func(w *gi.Window) {
-		gi.Quit()
-	})
-	win.SetCloseCleanFunc(func(w *gi.Window) {
-		go gi.Quit() // once main window is closed, quit
+	b.AddAppBar(func(tb *gi.Toolbar) {
+		giv.NewFuncButton(tb, vi.Filter)
+		// gi.NewSeparator(tb)
+		// vi.Img.ConfigToolbar(tb)
+		// gi.NewSeparator(tb)
+		// vi.OutAll.ConfigToolbar(tb)
 	})
 
-	vp.UpdateEndNoSig(updt)
-
-	win.MainMenuUpdated()
-	return win
-}
-
-// These props create interactive toolbar for GUI
-var VisProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"Filter", ki.Props{
-			"desc": "run filter methods on current ImageFile image",
-			"icon": "updt",
-		}},
-	},
-}
-
-var TheVis Vis
-
-func mainrun() {
-	TheVis.Defaults()
-	TheVis.Filter()
-	win := TheVis.ConfigGui()
-	win.StartEventLoop()
+	b.NewWindow().Run().Wait()
+	return b
 }

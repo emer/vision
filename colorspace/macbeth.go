@@ -5,8 +5,8 @@
 package colorspace
 
 import (
-	"github.com/emer/emergent/evec"
-	"github.com/emer/etable/etensor"
+	"github.com/emer/emergent/v2/evec"
+	"goki.dev/etable/v2/etensor"
 )
 
 // MacbethImage sets the Macbeth standard color test image to given tensor
