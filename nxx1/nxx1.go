@@ -19,7 +19,9 @@ overall values.
 */
 package nxx1
 
-import "goki.dev/mat32/v2"
+import (
+	"goki.dev/mat32/v2"
+)
 
 // Params are the Noisy X/(X+1) rate-coded activation function parameters.
 // This function well-characterizes the neural response function empirically,
@@ -119,7 +121,11 @@ func (xp *Params) XX1GainCor(x float32) float32 {
 // but ok for lower gains)
 func (xp *Params) NoisyXX1(x float32) float32 {
 	if x < 0 { // sigmoidal for < 0
-		return xp.SigMultEff / (1 + mat32.Exp(-(x * xp.SigGainNVar)))
+		ex := -(x * xp.SigGainNVar)
+		if ex > 50 {
+			return 0
+		}
+		return xp.SigMultEff / (1 + mat32.FastExp(ex))
 	} else if x < xp.InterpRange {
 		interp := 1 - ((xp.InterpRange - x) / xp.InterpRange)
 		return xp.SigValAt0 + interp*xp.InterpVal
@@ -150,7 +156,11 @@ func (xp *Params) NoisyXX1Gain(x, gain float32) float32 {
 		sigValAt0Arg := 0.5 * sigMultEffArg
 
 		if x < 0 { // sigmoidal for < 0
-			return sigMultEffArg / (1 + mat32.Exp(-(x * xp.SigGainNVar)))
+			ex := -(x * xp.SigGainNVar)
+			if ex > 50 {
+				return 0
+			}
+			return sigMultEffArg / (1 + mat32.FastExp(ex))
 		} else { // else x < interp_range
 			interp := 1 - ((xp.InterpRange - x) / xp.InterpRange)
 			return sigValAt0Arg + interp*xp.InterpVal

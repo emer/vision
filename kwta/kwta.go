@@ -83,7 +83,8 @@ func (kwta *KWTA) Update() {
 
 // GeThrFmG computes the threshold for Ge based on other conductances
 func (kwta *KWTA) GeThrFmG(gi float32) float32 {
-	return ((kwta.Gbar.I*gi*kwta.ErevSubThr.I + kwta.Gbar.L*kwta.ErevSubThr.L) / kwta.ThrSubErev.E)
+	ge := ((kwta.Gbar.I*gi*kwta.ErevSubThr.I + kwta.Gbar.L*kwta.ErevSubThr.L) / kwta.ThrSubErev.E)
+	return ge
 }
 
 // ActFmG computes rate-coded activation Act from conductances Ge and Gi

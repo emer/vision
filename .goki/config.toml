@@ -1,6 +1,6 @@
 Name = "vision"
 Desc = ""
-Version = "v2.0.0-dev0.0.3"
+Version = "v2.0.0-dev0.0.2"
 Type = "Library"
 
 [Build]
@@ -46,7 +46,7 @@ Type = "Library"
 
 [Release]
   VersionFile = "vfilter/version.go"
-  Package = "vision"
+  Package = "vfilter"
 
 [Generate]
   Dir = "."
