@@ -21,14 +21,11 @@ import (
 	_ "goki.dev/etable/v2/etview" // include to get gui views
 	"goki.dev/etable/v2/norm"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gimain"
 	"goki.dev/gi/v2/giv"
 	"goki.dev/grows/images"
 )
 
-func main() { gimain.Run(app) }
-
-func app() {
+func main() {
 	vi := &Vis{}
 	vi.Defaults()
 	vi.Filter()
