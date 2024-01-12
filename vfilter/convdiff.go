@@ -8,8 +8,8 @@ import (
 	"image"
 	"sync"
 
+	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/nproc"
-	"goki.dev/etable/v2/etensor"
 )
 
 // ConvDiff computes difference of two separate filter convolutions

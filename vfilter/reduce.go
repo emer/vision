@@ -7,8 +7,8 @@ package vfilter
 import (
 	"sync"
 
+	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/nproc"
-	"goki.dev/etable/v2/etensor"
 )
 
 // MaxReduceFilterY performs max-pooling reduce over inner Filter Y

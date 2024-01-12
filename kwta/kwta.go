@@ -7,10 +7,10 @@ package kwta
 import (
 	"log"
 
+	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/nxx1"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // KWTA contains all the parameters needed for computing FFFB

@@ -7,11 +7,11 @@ require (
 	github.com/emer/emergent/v2 v2.0.0-dev0.0.2
 	goki.dev/colors v0.8.43
 	goki.dev/enums v0.9.55
-	goki.dev/etable/v2 v2.0.0-dev0.0.11
+	github.com/emer/etable/v2 v2.0.0-dev0.0.11
 	goki.dev/gi/v2 v2.0.0-dev0.0.27
 	goki.dev/grows v0.3.30
 	goki.dev/gti v0.1.31
-	goki.dev/mat32/v2 v2.0.0-dev0.0.27
+	goki.dev/mat32 v2.0.0-dev0.0.27
 	goki.dev/ordmap v0.5.9
 )
 

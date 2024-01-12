@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 func init() {

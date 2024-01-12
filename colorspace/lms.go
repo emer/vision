@@ -7,7 +7,7 @@ package colorspace
 //go:generate goki generate
 
 import (
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // LMSComponents are different components of the LMS space

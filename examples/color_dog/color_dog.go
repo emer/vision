@@ -11,21 +11,18 @@ import (
 	"log"
 
 	"github.com/anthonynsimon/bild/transform"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	_ "github.com/emer/etable/v2/etview" // include to get gui views
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/dog"
 	"github.com/emer/vision/v2/vfilter"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	_ "goki.dev/etable/v2/etview" // include to get gui views
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gimain"
-	"goki.dev/gi/v2/giv"
+	"goki.dev/gi"
+	"goki.dev/giv"
 	"goki.dev/grows/images"
 )
 
-func main() { gimain.Run(app) }
-
-func app() {
+func main() {
 	vi := &Vis{}
 	vi.Defaults()
 	vi.Filter()

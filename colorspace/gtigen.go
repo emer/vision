@@ -39,7 +39,7 @@ var _ = gti.AddType(&gti.Type{
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Levels", &gti.Field{Name: "Levels", Type: "int", LocalType: "int", Doc: "number of levels in the lookup table -- linear interpolation used", Directives: gti.Directives{}, Tag: ""}},
-		{"Table", &gti.Field{Name: "Table", Type: "goki.dev/etable/v2/etensor.Float32", LocalType: "etensor.Float32", Doc: "lookup table", Directives: gti.Directives{}, Tag: ""}},
+		{"Table", &gti.Field{Name: "Table", Type: "github.com/emer/etable/v2/etensor.Float32", LocalType: "etensor.Float32", Doc: "lookup table", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),

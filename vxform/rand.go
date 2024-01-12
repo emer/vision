@@ -7,7 +7,7 @@ package vxform
 import (
 	"math/rand"
 
-	"goki.dev/etable/v2/minmax"
+	"github.com/emer/etable/v2/minmax"
 )
 
 // Rand specifies random transforms

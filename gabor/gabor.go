@@ -11,9 +11,9 @@ package gabor
 import (
 	"math"
 
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
 )
 
 // gabor.Filter specifies a gabor filter function,

@@ -11,17 +11,17 @@ import (
 	"log"
 
 	"github.com/anthonynsimon/bild/transform"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	_ "github.com/emer/etable/v2/etview" // include to get gui views
+	"github.com/emer/etable/v2/norm"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/gabor"
 	"github.com/emer/vision/v2/kwta"
 	"github.com/emer/vision/v2/v1complex"
 	"github.com/emer/vision/v2/vfilter"
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	_ "goki.dev/etable/v2/etview" // include to get gui views
-	"goki.dev/etable/v2/norm"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/giv"
+	"goki.dev/gi"
+	"goki.dev/giv"
 	"goki.dev/grows/images"
 )
 

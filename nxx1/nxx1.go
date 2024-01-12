@@ -20,7 +20,7 @@ overall values.
 package nxx1
 
 import (
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Params are the Noisy X/(X+1) rate-coded activation function parameters.

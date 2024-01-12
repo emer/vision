@@ -9,9 +9,9 @@ forms of signal processing
 package dog
 
 import (
-	"goki.dev/etable/v2/etable"
-	"goki.dev/etable/v2/etensor"
-	"goki.dev/mat32/v2"
+	"github.com/emer/etable/v2/etable"
+	"github.com/emer/etable/v2/etensor"
+	"goki.dev/mat32"
 )
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.
