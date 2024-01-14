@@ -4,6 +4,8 @@
 
 package fffb
 
+//go:generate goki generate -add-types
+
 import "github.com/emer/etable/v2/minmax"
 
 // Inhib contains state values for computed FFFB inhibition

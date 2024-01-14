@@ -4,6 +4,8 @@
 
 package kwta
 
+//go:generate goki generate -add-types
+
 import (
 	"log"
 

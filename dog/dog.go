@@ -8,6 +8,8 @@ forms of signal processing
 */
 package dog
 
+//go:generate goki generate -add-types
+
 import (
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"

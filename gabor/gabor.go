@@ -8,6 +8,8 @@ forms of signal processing
 */
 package gabor
 
+//go:generate goki generate -add-types
+
 import (
 	"math"
 

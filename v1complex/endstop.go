@@ -4,6 +4,8 @@
 
 package v1complex
 
+//go:generate goki generate -add-types
+
 import (
 	"sync"
 
