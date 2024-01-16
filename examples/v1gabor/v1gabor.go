@@ -37,7 +37,7 @@ func main() {
 type Vis struct { //gti:add
 
 	// name of image file to operate on
-	ImageFile gi.FileName
+	ImageFile gi.Filename
 
 	// V1 simple gabor filter parameters
 	V1sGabor gabor.Filter
@@ -104,7 +104,7 @@ type Vis struct { //gti:add
 }
 
 func (vi *Vis) Defaults() {
-	vi.ImageFile = gi.FileName("side-tee-128.png")
+	vi.ImageFile = gi.Filename("side-tee-128.png")
 	vi.V1sGabor.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4

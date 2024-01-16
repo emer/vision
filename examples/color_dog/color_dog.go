@@ -34,7 +34,7 @@ func main() {
 type Vis struct { //gti:add
 
 	// name of image file to operate on -- if macbeth or empty use the macbeth standard color test image
-	ImageFile gi.FileName
+	ImageFile gi.Filename
 
 	// LGN DoG filter parameters
 	DoG dog.Filter
@@ -77,7 +77,7 @@ type Vis struct { //gti:add
 }
 
 func (vi *Vis) Defaults() {
-	vi.ImageFile = ""                          // gi.FileName("GrangerRainbow.png")
+	vi.ImageFile = ""                          // gi.Filename("GrangerRainbow.png")
 	vi.DoGNames = []string{"Bal", "On", "Off"} // balanced, gain toward On, gain toward Off
 	vi.DoGGains = []float32{8, 4.1, 4.4}
 	vi.DoGOnGains = []float32{1, 1.2, 0.833}

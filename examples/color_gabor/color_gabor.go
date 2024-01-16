@@ -38,7 +38,7 @@ func main() {
 type V1Img struct { //gti:add
 
 	// name of image file to operate on
-	File gi.FileName
+	File gi.Filename
 
 	// target image size to use -- images will be rescaled to this size
 	Size image.Point
@@ -169,7 +169,7 @@ func (vi *Vis) Defaults() {
 	vi.ColorGain = 8
 	vi.Img = &V1Img{}
 	vi.Img.Defaults()
-	vi.Img.File = gi.FileName("car_004_00001.png")
+	vi.Img.File = gi.Filename("car_004_00001.png")
 	vi.V1sGabor.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
