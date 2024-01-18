@@ -4,12 +4,15 @@
 
 package main
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"image"
 	"log"
 
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/giv"
+	"cogentcore.org/core/grows/images"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
@@ -21,9 +24,6 @@ import (
 	"github.com/emer/vision/v2/kwta"
 	"github.com/emer/vision/v2/v1complex"
 	"github.com/emer/vision/v2/vfilter"
-	"goki.dev/gi"
-	"goki.dev/giv"
-	"goki.dev/grows/images"
 )
 
 func main() {

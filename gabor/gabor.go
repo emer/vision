@@ -8,14 +8,14 @@ forms of signal processing
 */
 package gabor
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"math"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // gabor.Filter specifies a gabor filter function,

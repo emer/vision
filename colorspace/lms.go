@@ -4,10 +4,10 @@
 
 package colorspace
 
-//go:generate goki generate
+//go:generate core generate
 
 import (
-	"goki.dev/mat32"
+	"cogentcore.org/core/mat32"
 )
 
 // LMSComponents are different components of the LMS space

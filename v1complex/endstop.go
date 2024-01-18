@@ -4,14 +4,14 @@
 
 package v1complex
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"sync"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/nproc"
-	"goki.dev/mat32"
 )
 
 var (

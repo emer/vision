@@ -5,8 +5,8 @@
 package kwta
 
 import (
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // NeighInhib adds an additional inhibition factor based on the same

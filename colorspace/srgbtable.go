@@ -5,8 +5,8 @@
 package colorspace
 
 import (
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/mat32"
 )
 
 // SRGBToOp implements a lookup-table for the conversion of

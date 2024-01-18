@@ -8,8 +8,8 @@ import (
 	"image"
 	"image/color"
 
+	"cogentcore.org/core/colors"
 	"github.com/emer/etable/v2/etensor"
-	"goki.dev/colors"
 )
 
 // RGBToTensor converts an RGB input image to an RGB etensor

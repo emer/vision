@@ -4,15 +4,15 @@
 
 package kwta
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"log"
 
+	"cogentcore.org/core/mat32"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/nxx1"
-	"goki.dev/mat32"
 )
 
 // KWTA contains all the parameters needed for computing FFFB
