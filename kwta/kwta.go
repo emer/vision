@@ -27,7 +27,7 @@ type KWTA struct {
 	Iters int
 
 	// threshold on delta-activation (change in activation) for stopping updating of activations
-	DelActThr float32 `def:"0.005"`
+	DelActThr float32 `default:"0.005"`
 
 	// layer-level feedforward & feedback inhibition -- applied over entire set of values
 	LayFFFB fffb.Params `view:"inline"`
@@ -39,7 +39,7 @@ type KWTA struct {
 	XX1 nxx1.Params `view:"inline"`
 
 	// time constant for integrating activation
-	ActTau float32 `def:"3"`
+	ActTau float32 `default:"3"`
 
 	// maximal conductances levels for channels
 	Gbar Chans `view:"inline"`

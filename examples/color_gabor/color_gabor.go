@@ -106,7 +106,7 @@ type Vis struct { //gti:add
 	SepColor bool
 
 	// extra gain for color channels -- lower contrast in general
-	ColorGain float32 `def:"8"`
+	ColorGain float32 `default:"8"`
 
 	// image that we operate upon -- one image often shared among multiple filters
 	Img *V1Img

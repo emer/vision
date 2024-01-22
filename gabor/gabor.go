@@ -30,7 +30,7 @@ type Filter struct {
 	Wt float32 `viewif:"On"`
 
 	// overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
-	Gain float32 `viewif:"On" def:"2"`
+	Gain float32 `viewif:"On" default:"2"`
 
 	// size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
 	Size int `viewif:"On"`
@@ -42,19 +42,19 @@ type Filter struct {
 	Spacing int `viewif:"On"`
 
 	// gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size
-	SigLen float32 `viewif:"On" def:"0.3"`
+	SigLen float32 `viewif:"On" default:"0.3"`
 
 	// gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size
-	SigWd float32 `viewif:"On" def:"0.15,0.2"`
+	SigWd float32 `viewif:"On" default:"0.15,0.2"`
 
 	// phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave
-	Phase float32 `viewif:"On" def:"0,90"`
+	Phase float32 `viewif:"On" default:"0,90"`
 
 	// cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
-	CircleEdge bool `viewif:"On" def:"true"`
+	CircleEdge bool `viewif:"On" default:"true"`
 
 	// number of different angles of overall gabor filter orientation to use -- first angle is always horizontal
-	NAngles int `viewif:"On" def:"4"`
+	NAngles int `viewif:"On" default:"4"`
 }
 
 func (gf *Filter) Defaults() {

@@ -19,7 +19,7 @@ type NeighInhib struct {
 	On bool
 
 	// overall value of the inhibition -- this is what is added into the unit Gi inhibition level
-	Gi float32 `def:"0.6"`
+	Gi float32 `default:"0.6"`
 }
 
 var (
