@@ -1,7 +1,7 @@
 ID = 'com.emer.vision.v2'
 Name = 'vision'
 Type = 'Library'
-Version = 'v2.0.0-dev0.0.6'
+Version = 'v2.0.0-dev0.0.7'
 
 [Generate]
   [Generate.Gtigen]
@@ -10,4 +10,3 @@ Version = 'v2.0.0-dev0.0.6'
 [Release]
   Package = 'vfilter'
   VersionFile = 'vfilter/version.go'
-

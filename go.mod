@@ -3,10 +3,10 @@ module github.com/emer/vision/v2
 go 1.21
 
 require (
-	cogentcore.org/core v0.0.2
+	cogentcore.org/core v0.0.3
 	github.com/anthonynsimon/bild v0.13.0
-	github.com/emer/emergent/v2 v2.0.0-dev0.0.8
-	github.com/emer/etable/v2 v2.0.0-dev0.0.14
+	github.com/emer/emergent/v2 v2.0.0-dev0.0.9
+	github.com/emer/etable/v2 v2.0.0-dev0.0.15
 )
 
 require (
@@ -19,7 +19,7 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/campoy/embedmd v1.0.0 // indirect
 	github.com/chewxy/math32 v1.10.1 // indirect
-	github.com/emer/empi/v2 v2.0.0-dev0.0.3 // indirect
+	github.com/emer/empi/v2 v2.0.0-dev0.0.4 // indirect
 	github.com/expr-lang/expr v1.15.8 // indirect
 	github.com/fatih/camelcase v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -37,13 +37,13 @@ require (
 	github.com/hack-pad/hackpadfs v0.2.1 // indirect
 	github.com/hack-pad/safejs v0.1.1 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
+	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848 // indirect
