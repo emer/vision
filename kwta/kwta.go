@@ -48,10 +48,10 @@ type KWTA struct {
 	Erev Chans `view:"inline"`
 
 	// Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
-	ErevSubThr Chans `inactive:"+" view:"-"`
+	ErevSubThr Chans `edit:"-" view:"-"`
 
 	// Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
-	ThrSubErev Chans `inactive:"+" view:"-" json:"-" xml:"-"`
+	ThrSubErev Chans `edit:"-" view:"-" json:"-" xml:"-"`
 
 	//
 	ActDt float32 `view:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
