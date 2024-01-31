@@ -304,8 +304,7 @@ func (vi *Vis) Filter() error { //gti:add
 // 		Gui
 
 func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewAppBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
-	b.App().About = `This demonstrates color-sensitive V1 Gabor Filtering.  See <a href="https://github.com/emer/vision">Vision on GitHub</a>.</p>`
+	b := gi.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
 
 	giv.NewStructView(b, "sv").SetStruct(vi)
 

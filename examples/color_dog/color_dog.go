@@ -244,17 +244,12 @@ func (vi *Vis) Filter() error { //gti:add
 // 		Gui
 
 func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewAppBody("colordog").SetTitle("Color DoGFiltering")
-	b.App().About = `This demonstrates LMS colorspace difference-of-gaussian blob filtering.  See <a href="https://github.com/emer/vision">Vision on GitHub</a>.</p>`
+	b := gi.NewBody("colordog").SetTitle("Color DoGFiltering")
 
 	giv.NewStructView(b, "sv").SetStruct(vi)
 
 	b.AddAppBar(func(tb *gi.Toolbar) {
 		giv.NewFuncButton(tb, vi.Filter)
-		// gi.NewSeparator(tb)
-		// vi.Img.ConfigToolbar(tb)
-		// gi.NewSeparator(tb)
-		// vi.OutAll.ConfigToolbar(tb)
 	})
 
 	b.NewWindow().Run().Wait()

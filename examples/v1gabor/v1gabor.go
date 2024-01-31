@@ -220,17 +220,12 @@ func (vi *Vis) Filter() error { //gti:add
 // 		Gui
 
 func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewAppBody("v1gabor").SetTitle("V1 Gabor Filtering")
-	b.App().About = `This demonstrates basic V1 Gabor Filtering.  See <a href="https://github.com/emer/vision/v1">V1 on GitHub</a>.</p>`
+	b := gi.NewBody("v1gabor").SetTitle("V1 Gabor Filtering")
 
 	giv.NewStructView(b, "sv").SetStruct(vi)
 
 	b.AddAppBar(func(tb *gi.Toolbar) {
 		giv.NewFuncButton(tb, vi.Filter)
-		// gi.NewSeparator(tb)
-		// vi.Img.ConfigToolbar(tb)
-		// gi.NewSeparator(tb)
-		// vi.OutAll.ConfigToolbar(tb)
 	})
 
 	b.NewWindow().Run().Wait()
