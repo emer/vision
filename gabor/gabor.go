@@ -27,34 +27,34 @@ type Filter struct {
 	On bool
 
 	// how much relative weight does this filter have when combined with other filters
-	Wt float32 `viewif:"On"`
+	Wt float32
 
 	// overall gain multiplier applied after filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
-	Gain float32 `viewif:"On" default:"2"`
+	Gain float32 `default:"2"`
 
 	// size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
-	Size int `viewif:"On"`
+	Size int
 
 	// wavelength of the sine waves -- number of pixels over which a full period of the wave takes place -- typically same as Size (computation adds a 2 PI factor to translate into pixels instead of radians)
-	WvLen float32 `viewif:"On"`
+	WvLen float32
 
 	// how far apart to space the centers of the gabor filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
-	Spacing int `viewif:"On"`
+	Spacing int
 
 	// gaussian sigma for the length dimension (elongated axis perpendicular to the sine waves) -- as a normalized proportion of filter Size
-	SigLen float32 `viewif:"On" default:"0.3"`
+	SigLen float32 `default:"0.3"`
 
 	// gaussian sigma for the width dimension (in the direction of the sine waves) -- as a normalized proportion of filter size
-	SigWd float32 `viewif:"On" default:"0.15,0.2"`
+	SigWd float32 `default:"0.15,0.2"`
 
 	// phase offset for the sine wave, in degrees -- 0 = asymmetric sine wave, 90 = symmetric cosine wave
-	Phase float32 `viewif:"On" default:"0,90"`
+	Phase float32 `default:"0,90"`
 
 	// cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
-	CircleEdge bool `viewif:"On" default:"true"`
+	CircleEdge bool `default:"true"`
 
 	// number of different angles of overall gabor filter orientation to use -- first angle is always horizontal
-	NAngles int `viewif:"On" default:"4"`
+	NAngles int `default:"4"`
 }
 
 func (gf *Filter) Defaults() {
@@ -72,6 +72,15 @@ func (gf *Filter) Defaults() {
 }
 
 func (gf *Filter) Update() {
+}
+
+func (gf *Filter) ShouldShow(field string) bool {
+	switch field {
+	case "On":
+		return true
+	default:
+		return gf.On
+	}
 }
 
 // SetSize sets the size and WvLen to same value, and also sets spacing

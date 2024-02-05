@@ -23,28 +23,28 @@ type Filter struct {
 	On bool
 
 	// how much relative weight does this filter have when combined with other filters
-	Wt float32 `viewif:"On"`
+	Wt float32
 
 	// overall gain multiplier applied after dog filtering -- only relevant if not using renormalization (otherwize it just gets renormed away)
-	Gain float32 `viewif:"On" default:"8"`
+	Gain float32 `default:"8"`
 
 	// gain for the on component of filter, only relevant for color-opponent DoG's
-	OnGain float32 `viewif:"On" default:"1"`
+	OnGain float32 `default:"1"`
 
 	// size of the overall filter -- number of pixels wide and tall for a square matrix used to encode the filter -- filter is centered within this square -- typically an even number, min effective size ~6
-	Size int `viewif:"On"`
+	Size int
 
 	// how far apart to space the centers of the dog filters -- 1 = every pixel, 2 = every other pixel, etc -- high-res should be 1 or 2, lower res can be increments therefrom
-	Spacing int `viewif:"On"`
+	Spacing int
 
 	// gaussian sigma for the narrower On gaussian, in normalized units relative to Size
-	OnSig float32 `viewif:"On" default:"0.125"`
+	OnSig float32 `default:"0.125"`
 
 	// gaussian sigma for the wider Off gaussian, in normalized units relative to Size
-	OffSig float32 `viewif:"On" default:"0.25"`
+	OffSig float32 `default:"0.25"`
 
 	// cut off the filter (to zero) outside a circle of diameter = Size -- makes the filter more radially symmetric
-	CircleEdge bool `viewif:"On" default:"true"`
+	CircleEdge bool `default:"true"`
 }
 
 func (gf *Filter) Defaults() {
@@ -60,6 +60,15 @@ func (gf *Filter) Defaults() {
 }
 
 func (gf *Filter) Update() {
+}
+
+func (gf *Filter) ShouldShow(field string) bool {
+	switch field {
+	case "On":
+		return true
+	default:
+		return gf.On
+	}
 }
 
 // SetSize sets the size and spacing -- these are the main params
