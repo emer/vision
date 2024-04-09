@@ -28,9 +28,9 @@ type Rand struct {
 
 // Gen Generates new random transform values
 func (rx *Rand) Gen(xf *XForm) {
-	trX := rx.TransX.ProjVal(rand.Float32())
-	trY := rx.TransY.ProjVal(rand.Float32())
-	sc := rx.Scale.ProjVal(rand.Float32())
-	rt := rx.Rot.ProjVal(rand.Float32())
+	trX := rx.TransX.ProjValue(rand.Float32())
+	trY := rx.TransY.ProjValue(rand.Float32())
+	sc := rx.Scale.ProjValue(rand.Float32())
+	rt := rx.Rot.ProjValue(rand.Float32())
 	xf.Set(trX, trY, sc, rt)
 }
