@@ -149,9 +149,9 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 		{"Filter", etensor.FLOAT32, []int{int(FiltersN), gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
 	}, 3)
 	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
-	tab.SetCellStringIdx(0, int(On), "On")
-	tab.SetCellStringIdx(0, int(Off), "Off")
-	tab.SetCellStringIdx(0, int(Net), "Net")
+	tab.SetCellStringIndex(0, int(On), "On")
+	tab.SetCellStringIndex(0, int(Off), "Off")
+	tab.SetCellStringIndex(0, int(Net), "Net")
 }
 
 // FilterTensor extracts the given filter subspace from set of 3 filters in input tensor

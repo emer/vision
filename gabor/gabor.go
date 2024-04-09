@@ -167,6 +167,6 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := mat32.RadToDeg(-float32(ang) * angInc)
-		tab.SetCellFloatIdx(0, ang, float64(-angf))
+		tab.SetCellFloatIndex(0, ang, float64(-angf))
 	}
 }
