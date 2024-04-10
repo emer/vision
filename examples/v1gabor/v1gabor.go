@@ -67,7 +67,7 @@ type Vis struct { //gti:add
 	ImgTsr etensor.Float32 `view:"no-inline"`
 
 	// input image reconstructed from V1s tensor
-	ImgFmV1sTsr etensor.Float32 `view:"no-inline"`
+	ImgFromV1sTsr etensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output tensor
 	V1sTsr etensor.Float32 `view:"no-inline"`
@@ -160,16 +160,16 @@ func (vi *Vis) V1Simple() {
 	}
 }
 
-// ImgFmV1Simple reverses V1Simple Gabor filtering from V1s back to input image
-func (vi *Vis) ImgFmV1Simple() {
+// ImgFromV1Simple reverses V1Simple Gabor filtering from V1s back to input image
+func (vi *Vis) ImgFromV1Simple() {
 	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sTsr)
 	vi.V1sUnPoolTsr.SetZeros()
-	vi.ImgFmV1sTsr.CopyShapeFrom(&vi.ImgTsr)
-	vi.ImgFmV1sTsr.SetZeros()
+	vi.ImgFromV1sTsr.CopyShapeFrom(&vi.ImgTsr)
+	vi.ImgFromV1sTsr.SetZeros()
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
-	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFmV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
-	norm.Unit32(vi.ImgFmV1sTsr.Values)
-	vi.ImgFmV1sTsr.SetMetaData("image", "+")
+	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
+	norm.Unit32(vi.ImgFromV1sTsr.Values)
+	vi.ImgFromV1sTsr.SetMetaData("image", "+")
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.
@@ -212,7 +212,7 @@ func (vi *Vis) Filter() error { //gti:add
 	vi.V1Simple()
 	vi.V1Complex()
 	vi.V1All()
-	vi.ImgFmV1Simple()
+	vi.ImgFromV1Simple()
 	return nil
 }
 

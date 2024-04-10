@@ -15,10 +15,10 @@ func SRGBToLinearComp(srgb float32) float32 {
 	return mat32.Pow((srgb+0.055)/1.055, 2.4)
 }
 
-// SRGBFmLinearComp converts an sRGB rgb linear component
+// SRGBFromLinearComp converts an sRGB rgb linear component
 // to non-linear (gamma corrected) sRGB value
 // Used in converting from XYZ to sRGB.
-func SRGBFmLinearComp(lin float32) float32 {
+func SRGBFromLinearComp(lin float32) float32 {
 	if lin <= 0.0031308 {
 		return 12.92 * lin
 	}
@@ -34,12 +34,12 @@ func SRGBToLinear(r, g, b float32) (rl, gl, bl float32) {
 	return
 }
 
-// SRGBFmLinear converts set of sRGB components from linear values,
+// SRGBFromLinear converts set of sRGB components from linear values,
 // adding gamma correction.
-func SRGBFmLinear(rl, gl, bl float32) (r, g, b float32) {
-	r = SRGBFmLinearComp(rl)
-	g = SRGBFmLinearComp(gl)
-	b = SRGBFmLinearComp(bl)
+func SRGBFromLinear(rl, gl, bl float32) (r, g, b float32) {
+	r = SRGBFromLinearComp(rl)
+	g = SRGBFromLinearComp(gl)
+	b = SRGBFromLinearComp(bl)
 	return
 }
 

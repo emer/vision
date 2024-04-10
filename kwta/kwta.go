@@ -47,10 +47,10 @@ type KWTA struct {
 	// reversal potentials for each channel
 	Erev Chans `view:"inline"`
 
-	// Erev - Act.Thr for each channel -- used in computing GeThrFmG among others
+	// Erev - Act.Thr for each channel -- used in computing GeThrFromG among others
 	ErevSubThr Chans `edit:"-" view:"-"`
 
-	// Act.Thr - Erev for each channel -- used in computing GeThrFmG among others
+	// Act.Thr - Erev for each channel -- used in computing GeThrFromG among others
 	ThrSubErev Chans `edit:"-" view:"-" json:"-" xml:"-"`
 
 	//
@@ -78,19 +78,19 @@ func (kwta *KWTA) Update() {
 	kwta.LayFFFB.Update()
 	kwta.PoolFFFB.Update()
 	kwta.XX1.Update()
-	kwta.ErevSubThr.SetFmOtherMinus(kwta.Erev, kwta.XX1.Thr)
-	kwta.ThrSubErev.SetFmMinusOther(kwta.XX1.Thr, kwta.Erev)
+	kwta.ErevSubThr.SetFromOtherMinus(kwta.Erev, kwta.XX1.Thr)
+	kwta.ThrSubErev.SetFromMinusOther(kwta.XX1.Thr, kwta.Erev)
 	kwta.ActDt = 1 / kwta.ActTau
 }
 
-// GeThrFmG computes the threshold for Ge based on other conductances
-func (kwta *KWTA) GeThrFmG(gi float32) float32 {
+// GeThrFromG computes the threshold for Ge based on other conductances
+func (kwta *KWTA) GeThrFromG(gi float32) float32 {
 	ge := ((kwta.Gbar.I*gi*kwta.ErevSubThr.I + kwta.Gbar.L*kwta.ErevSubThr.L) / kwta.ThrSubErev.E)
 	return ge
 }
 
-// ActFmG computes rate-coded activation Act from conductances Ge and Gi
-func (kwta *KWTA) ActFmG(geThr, ge, act float32) (nwAct, delAct float32) {
+// ActFromG computes rate-coded activation Act from conductances Ge and Gi
+func (kwta *KWTA) ActFromG(geThr, ge, act float32) (nwAct, delAct float32) {
 	nwAct = kwta.XX1.NoisyXX1(ge*kwta.Gbar.E - geThr)
 	delAct = kwta.ActDt * (nwAct - act)
 	nwAct = act + delAct
@@ -134,9 +134,9 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 			if extGi != nil {
 				gi += extGi.Values[i]
 			}
-			geThr := kwta.GeThrFmG(gi)
+			geThr := kwta.GeThrFromG(gi)
 			ge := raws[i]
-			nwAct, delAct := kwta.ActFmG(geThr, ge, acts[i])
+			nwAct, delAct := kwta.ActFromG(geThr, ge, acts[i])
 			maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
 			inhib.Act.UpdateValue(nwAct, int32(i))
 			acts[i] = nwAct
@@ -240,10 +240,10 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 							eGi := kwta.PoolFFFB.Gi * kwta.PoolFFFB.FFInhib(eIn, eIn)
 							gi = mat32.Max(gi, eGi)
 						}
-						geThr := kwta.GeThrFmG(gi)
+						geThr := kwta.GeThrFromG(gi)
 						ge := raws[idx]
 						act := acts[idx]
-						nwAct, delAct := kwta.ActFmG(geThr, ge, act)
+						nwAct, delAct := kwta.ActFromG(geThr, ge, act)
 						maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
 						layInhib.Act.UpdateValue(nwAct, int32(idx))
 						plInhib.Act.UpdateValue(nwAct, int32(ui))
