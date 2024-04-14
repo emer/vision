@@ -10,9 +10,9 @@ import (
 	"image"
 	"log"
 
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
-	"cogentcore.org/core/grows/images"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
@@ -33,7 +33,7 @@ func main() {
 type Vis struct { //gti:add
 
 	// name of image file to operate on
-	ImageFile gi.Filename
+	ImageFile core.Filename
 
 	// LGN DoG filter parameters
 	DoG dog.Filter
@@ -61,7 +61,7 @@ type Vis struct { //gti:add
 }
 
 func (vi *Vis) Defaults() {
-	vi.ImageFile = gi.Filename("side-tee-128.png")
+	vi.ImageFile = core.Filename("side-tee-128.png")
 	vi.DoG.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
@@ -121,13 +121,13 @@ func (vi *Vis) Filter() error { //gti:add
 //////////////////////////////////////////////////////////////////////////////
 // 		Gui
 
-func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewBody("lgn_dog").SetTitle("LGN DoG Filtering")
+func (vi *Vis) ConfigGUI() *core.Body {
+	b := core.NewBody("lgn_dog").SetTitle("LGN DoG Filtering")
 
-	giv.NewStructView(b, "sv").SetStruct(vi)
+	views.NewStructView(b, "sv").SetStruct(vi)
 
-	b.AddAppBar(func(tb *gi.Toolbar) {
-		giv.NewFuncButton(tb, vi.Filter)
+	b.AddAppBar(func(tb *core.Toolbar) {
+		views.NewFuncButton(tb, vi.Filter)
 	})
 
 	b.NewWindow().Run().Wait()

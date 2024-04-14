@@ -10,9 +10,9 @@ import (
 	"image"
 	"log"
 
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
-	"cogentcore.org/core/grows/images"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
@@ -38,7 +38,7 @@ func main() {
 type V1Img struct { //gti:add
 
 	// name of image file to operate on
-	File gi.Filename
+	File core.Filename
 
 	// target image size to use -- images will be rescaled to this size
 	Size image.Point
@@ -169,7 +169,7 @@ func (vi *Vis) Defaults() {
 	vi.ColorGain = 8
 	vi.Img = &V1Img{}
 	vi.Img.Defaults()
-	vi.Img.File = gi.Filename("car_004_00001.png")
+	vi.Img.File = core.Filename("car_004_00001.png")
 	vi.V1sGabor.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
@@ -303,13 +303,13 @@ func (vi *Vis) Filter() error { //gti:add
 //////////////////////////////////////////////////////////////////////////////
 // 		Gui
 
-func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
+func (vi *Vis) ConfigGUI() *core.Body {
+	b := core.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
 
-	giv.NewStructView(b, "sv").SetStruct(vi)
+	views.NewStructView(b, "sv").SetStruct(vi)
 
-	b.AddAppBar(func(tb *gi.Toolbar) {
-		giv.NewFuncButton(tb, vi.Filter)
+	b.AddAppBar(func(tb *core.Toolbar) {
+		views.NewFuncButton(tb, vi.Filter)
 	})
 
 	b.NewWindow().Run().Wait()

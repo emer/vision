@@ -10,9 +10,9 @@ import (
 	"image"
 	"log"
 
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
-	"cogentcore.org/core/grows/images"
+	"cogentcore.org/core/core"
+	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
@@ -34,7 +34,7 @@ func main() {
 type Vis struct { //gti:add
 
 	// name of image file to operate on -- if macbeth or empty use the macbeth standard color test image
-	ImageFile gi.Filename
+	ImageFile core.Filename
 
 	// LGN DoG filter parameters
 	DoG dog.Filter
@@ -77,7 +77,7 @@ type Vis struct { //gti:add
 }
 
 func (vi *Vis) Defaults() {
-	vi.ImageFile = ""                          // gi.Filename("GrangerRainbow.png")
+	vi.ImageFile = ""                          // core.Filename("GrangerRainbow.png")
 	vi.DoGNames = []string{"Bal", "On", "Off"} // balanced, gain toward On, gain toward Off
 	vi.DoGGains = []float32{8, 4.1, 4.4}
 	vi.DoGOnGains = []float32{1, 1.2, 0.833}
@@ -243,13 +243,13 @@ func (vi *Vis) Filter() error { //gti:add
 //////////////////////////////////////////////////////////////////////////////
 // 		Gui
 
-func (vi *Vis) ConfigGUI() *gi.Body {
-	b := gi.NewBody("colordog").SetTitle("Color DoGFiltering")
+func (vi *Vis) ConfigGUI() *core.Body {
+	b := core.NewBody("colordog").SetTitle("Color DoGFiltering")
 
-	giv.NewStructView(b, "sv").SetStruct(vi)
+	views.NewStructView(b, "sv").SetStruct(vi)
 
-	b.AddAppBar(func(tb *gi.Toolbar) {
-		giv.NewFuncButton(tb, vi.Filter)
+	b.AddAppBar(func(tb *core.Toolbar) {
+		views.NewFuncButton(tb, vi.Filter)
 	})
 
 	b.NewWindow().Run().Wait()
