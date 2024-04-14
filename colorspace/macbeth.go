@@ -39,14 +39,14 @@ func MacbethImage(img *etensor.Float32, width, height, bord int) {
 		52, 52, 52,
 	}
 
-	nsq := evec.Vec2i{6, 4}
+	nsq := evec.Vector2i{6, 4}
 	numsq := nsq.X * nsq.Y
-	sz := evec.Vec2i{width + bord*2 + 8, height + bord*2 + 8}
-	bvec := evec.Vec2i{bord, bord}
-	marg := evec.Vec2i{8, 8}
+	sz := evec.Vector2i{width + bord*2 + 8, height + bord*2 + 8}
+	bvec := evec.Vector2i{bord, bord}
+	marg := evec.Vector2i{8, 8}
 	upBord := sz.Sub(bvec).Sub(marg)
 
-	netSz := evec.Vec2i{width, height}
+	netSz := evec.Vector2i{width, height}
 	sqSz := netSz.Div(nsq)
 
 	if img == nil {
@@ -54,7 +54,7 @@ func MacbethImage(img *etensor.Float32, width, height, bord int) {
 	}
 	img.SetShape([]int{3, sz.Y, sz.X}, nil, []string{"Y", "X", "RGB"})
 
-	ic := evec.Vec2i{}
+	ic := evec.Vector2i{}
 	for ic.Y = bvec.Y; ic.Y < upBord.Y; ic.Y++ {
 		for ic.X = bvec.X; ic.X < upBord.X; ic.X++ {
 			nc := ic.Sub(bvec)
