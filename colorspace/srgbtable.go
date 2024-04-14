@@ -5,7 +5,7 @@
 package colorspace
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etensor"
 )
 
@@ -59,8 +59,8 @@ func (so *SRGBToOp) Init() {
 
 func (so *SRGBToOp) InterpIdx(val float32) (loi, hii int, pctlo, pcthi float32) {
 	fi := val * float32(so.Levels)
-	loi = int(mat32.Floor(fi))
-	hii = int(mat32.Ceil(fi))
+	loi = int(math32.Floor(fi))
+	hii = int(math32.Ceil(fi))
 	switch {
 	case loi == so.Levels-1:
 		hii = loi

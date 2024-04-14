@@ -9,7 +9,7 @@ package v1complex
 import (
 	"sync"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/nproc"
 )
@@ -103,7 +103,7 @@ func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *etensor.Floa
 						ofY := ly + dsign*EndStopOff4Y[ang*3+oi]
 						if ofX >= 0 && ofX < layX && ofY >= 0 && ofY < layY {
 							off := act.Value([]int{ofY, ofX, py, ang})
-							offMax = mat32.Max(offMax, off)
+							offMax = math32.Max(offMax, off)
 						}
 					}
 					es := ls - offMax // simple diff

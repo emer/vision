@@ -9,7 +9,7 @@ package kwta
 import (
 	"log"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/nxx1"
@@ -137,7 +137,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 			geThr := kwta.GeThrFromG(gi)
 			ge := raws[i]
 			nwAct, delAct := kwta.ActFromG(geThr, ge, acts[i])
-			maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
+			maxDelAct = math32.Max(maxDelAct, math32.Abs(delAct))
 			inhib.Act.UpdateValue(nwAct, int32(i))
 			acts[i] = nwAct
 		}
@@ -226,7 +226,7 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 
 				kwta.PoolFFFB.Inhib(plInhib)
 
-				giPool := mat32.Max(layInhib.Gi, plInhib.Gi)
+				giPool := math32.Max(layInhib.Gi, plInhib.Gi)
 
 				plInhib.Act.Init()
 				pui := pi * plN
@@ -238,13 +238,13 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 						if extGi != nil {
 							eIn := extGi.Values[idx]
 							eGi := kwta.PoolFFFB.Gi * kwta.PoolFFFB.FFInhib(eIn, eIn)
-							gi = mat32.Max(gi, eGi)
+							gi = math32.Max(gi, eGi)
 						}
 						geThr := kwta.GeThrFromG(gi)
 						ge := raws[idx]
 						act := acts[idx]
 						nwAct, delAct := kwta.ActFromG(geThr, ge, act)
-						maxDelAct = mat32.Max(maxDelAct, mat32.Abs(delAct))
+						maxDelAct = math32.Max(maxDelAct, math32.Abs(delAct))
 						layInhib.Act.UpdateValue(nwAct, int32(idx))
 						plInhib.Act.UpdateValue(nwAct, int32(ui))
 						acts[idx] = nwAct

@@ -11,7 +11,7 @@ package dog
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
 )
@@ -81,7 +81,7 @@ func (gf *Filter) SetSize(sz, spc int) {
 // GaussDenSig returns gaussian density for given value and sigma
 func GaussDenSig(x, sig float32) float32 {
 	x /= sig
-	return 0.398942280 * mat32.Exp(-0.5*x*x) / sig
+	return 0.398942280 * math32.Exp(-0.5*x*x) / sig
 }
 
 // ToTensor renders dog filters into the given etable etensor.Tensor,
@@ -102,7 +102,7 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 			xf := float32(x) - ctr
 			yf := float32(y) - ctr
 
-			dist := mat32.Hypot(xf, yf)
+			dist := math32.Hypot(xf, yf)
 			var ong, offg float32
 			if !(gf.CircleEdge && (dist > radius)) {
 				ong = GaussDenSig(dist, gsOn)

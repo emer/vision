@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 func init() {
@@ -24,25 +24,25 @@ func TestSRGBTable(t *testing.T) {
 		b := rand.Float32()
 		lc, mc, sc, lmc, lvm, svlm, grey := SRGBToLMSComps(r, g, b)
 		lcl, mcl, scl, lmcl, lvml, svlml, greyl := TheSRGBToOp.Lookup(r, g, b)
-		if mat32.Abs(lc-lcl) > tol {
+		if math32.Abs(lc-lcl) > tol {
 			fmt.Printf("lc err: comp: %g  lookup: %g\n", lc, lcl)
 		}
-		if mat32.Abs(mc-mcl) > tol {
+		if math32.Abs(mc-mcl) > tol {
 			fmt.Printf("mc err: comp: %g  lookup: %g\n", mc, mcl)
 		}
-		if mat32.Abs(sc-scl) > tol {
+		if math32.Abs(sc-scl) > tol {
 			fmt.Printf("sc err: comp: %g  lookup: %g\n", sc, scl)
 		}
-		if mat32.Abs(lmc-lmcl) > tol {
+		if math32.Abs(lmc-lmcl) > tol {
 			fmt.Printf("lmc err: comp: %g  lookup: %g\n", lmc, lmcl)
 		}
-		if mat32.Abs(lvm-lvml) > tol {
+		if math32.Abs(lvm-lvml) > tol {
 			fmt.Printf("lvm err: comp: %g  lookup: %g\n", lvm, lvml)
 		}
-		if mat32.Abs(svlm-svlml) > tol {
+		if math32.Abs(svlm-svlml) > tol {
 			fmt.Printf("svlm err: comp: %g  lookup: %g\n", svlm, svlml)
 		}
-		if mat32.Abs(grey-greyl) > tol {
+		if math32.Abs(grey-greyl) > tol {
 			fmt.Printf("grey err: comp: %g  lookup: %g\n", grey, greyl)
 		}
 	}

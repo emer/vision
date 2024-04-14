@@ -13,7 +13,7 @@ package gabor
 import (
 	"math"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etable"
 	"github.com/emer/etable/v2/etensor"
 )
@@ -108,7 +108,7 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	wdNorm := 1.0 / (2.0 * gsWd * gsWd)
 
 	twoPiNorm := (2.0 * math.Pi) / gf.WvLen
-	phsRad := mat32.DegToRad(gf.Phase)
+	phsRad := math32.DegToRad(gf.Phase)
 
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := -float32(ang) * angInc
@@ -120,13 +120,13 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 				xf := float32(x) - ctr
 				yf := float32(y) - ctr
 
-				dist := mat32.Hypot(xf, yf)
+				dist := math32.Hypot(xf, yf)
 				val := float32(0)
 				if !(gf.CircleEdge && (dist > radius)) {
-					nx := xf*mat32.Cos(angf) - yf*mat32.Sin(angf)
-					ny := yf*mat32.Cos(angf) + xf*mat32.Sin(angf)
-					gauss := mat32.Exp(-(lenNorm*(nx*nx) + wdNorm*(ny*ny)))
-					sin := mat32.Sin(twoPiNorm*ny + phsRad)
+					nx := xf*math32.Cos(angf) - yf*math32.Sin(angf)
+					ny := yf*math32.Cos(angf) + xf*math32.Sin(angf)
+					gauss := math32.Exp(-(lenNorm*(nx*nx) + wdNorm*(ny*ny)))
+					sin := math32.Sin(twoPiNorm*ny + phsRad)
 					val = gauss * sin
 					if val > 0 {
 						posSum += val
@@ -166,7 +166,7 @@ func (gf *Filter) ToTable(tab *etable.Table) {
 	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
-		angf := mat32.RadToDeg(-float32(ang) * angInc)
+		angf := math32.RadToDeg(-float32(ang) * angInc)
 		tab.SetCellFloatIndex(0, ang, float64(-angf))
 	}
 }

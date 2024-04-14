@@ -7,7 +7,7 @@ package vfilter
 import (
 	"math"
 
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 	"github.com/emer/etable/v2/etensor"
 	"github.com/emer/etable/v2/norm"
 )
@@ -19,7 +19,7 @@ import (
 // ndim must be < NumDims() if not 0 (panics).
 func TensorLogNorm32(tsr *etensor.Float32, ndim int) {
 	for i, v := range tsr.Values {
-		tsr.Values[i] = mat32.Log(1 + v)
+		tsr.Values[i] = math32.Log(1 + v)
 	}
 	norm.TensorDivNorm32(tsr, ndim, norm.Max32)
 }
