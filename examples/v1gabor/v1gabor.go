@@ -11,7 +11,7 @@ import (
 	"log"
 
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/iox/imagex"
 	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
@@ -127,7 +127,7 @@ func (vi *Vis) Defaults() {
 // and converts to a float32 tensor for processing
 func (vi *Vis) OpenImage(filepath string) error { //gti:add
 	var err error
-	vi.Img, _, err = images.Open(filepath)
+	vi.Img, _, err = imagex.Open(filepath)
 	if err != nil {
 		log.Println(err)
 		return err

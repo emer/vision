@@ -11,7 +11,7 @@ import (
 	"log"
 
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/iox/imagex"
 	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/etable/v2/etable"
@@ -122,7 +122,7 @@ func (vi *Vis) OutTsr(name string) *etensor.Float32 {
 // OpenImage opens given filename as current image Img
 func (vi *Vis) OpenImage(filepath string) error { //gti:add
 	var err error
-	vi.Img, _, err = images.Open(filepath)
+	vi.Img, _, err = imagex.Open(filepath)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -149,7 +149,7 @@ func (vi *Vis) OpenMacbeth() error {
 	img = vfilter.RGBTensorToImage(img, &vi.ImgTsr, 0, false)
 	vi.Img = img
 	var err error
-	err = images.Save(img, "macbeth.png")
+	err = imagex.Save(img, "macbeth.png")
 	if err != nil {
 		log.Println(err)
 		return err
