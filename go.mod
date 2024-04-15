@@ -3,10 +3,10 @@ module github.com/emer/vision/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.0.9
+	cogentcore.org/core v0.1.0
 	github.com/anthonynsimon/bild v0.13.0
-	github.com/emer/emergent/v2 v2.0.0-dev0.0.13
-	github.com/emer/etable/v2 v2.0.0-dev0.0.18
+	github.com/emer/emergent/v2 v2.0.0-dev0.0.14
+	github.com/emer/etable/v2 v2.0.0-dev0.0.19
 )
 
 require (
@@ -19,7 +19,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/campoy/embedmd v1.0.0 // indirect
 	github.com/chewxy/math32 v1.10.1 // indirect
-	github.com/emer/empi/v2 v2.0.0-dev0.0.5 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-fonts/liberation v0.3.2 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240307211618-a69d953ea142 // indirect
