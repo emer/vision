@@ -31,7 +31,7 @@ func main() {
 
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
-type Vis struct { //gti:add
+type Vis struct { //types:add
 
 	// name of image file to operate on -- if macbeth or empty use the macbeth standard color test image
 	ImageFile core.Filename
@@ -120,7 +120,7 @@ func (vi *Vis) OutTsr(name string) *etensor.Float32 {
 }
 
 // OpenImage opens given filename as current image Img
-func (vi *Vis) OpenImage(filepath string) error { //gti:add
+func (vi *Vis) OpenImage(filepath string) error { //types:add
 	var err error
 	vi.Img, _, err = imagex.Open(filepath)
 	if err != nil {
@@ -221,7 +221,7 @@ func (vi *Vis) AggAll() {
 
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
-func (vi *Vis) Filter() error { //gti:add
+func (vi *Vis) Filter() error { //types:add
 	if vi.ImageFile == "" || vi.ImageFile == "macbeth" {
 		err := vi.OpenMacbeth()
 		if err != nil {

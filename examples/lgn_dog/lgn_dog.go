@@ -30,7 +30,7 @@ func main() {
 
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed
-type Vis struct { //gti:add
+type Vis struct { //types:add
 
 	// name of image file to operate on
 	ImageFile core.Filename
@@ -80,7 +80,7 @@ func (vi *Vis) Defaults() {
 
 // OpenImage opens given filename as current image Img
 // and converts to a float32 tensor for processing
-func (vi *Vis) OpenImage(filepath string) error { //gti:add
+func (vi *Vis) OpenImage(filepath string) error { //types:add
 	var err error
 	vi.Img, _, err = imagex.Open(filepath)
 	if err != nil {
@@ -108,7 +108,7 @@ func (vi *Vis) LGNDoG() {
 
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
-func (vi *Vis) Filter() error { //gti:add
+func (vi *Vis) Filter() error { //types:add
 	err := vi.OpenImage(string(vi.ImageFile))
 	if err != nil {
 		log.Println(err)

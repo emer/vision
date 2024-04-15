@@ -35,7 +35,7 @@ func main() {
 
 // Img manages conversion of a bitmap image into tensor formats for
 // subsequent processing by filters.
-type V1Img struct { //gti:add
+type V1Img struct { //types:add
 
 	// name of image file to operate on
 	File core.Filename
@@ -59,7 +59,7 @@ func (vi *V1Img) Defaults() {
 
 // OpenImage opens given filename as current image Img
 // and converts to a float32 tensor for processing
-func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //gti:add
+func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //types:add
 	var err error
 	vi.Img, _, err = imagex.Open(filepath)
 	if err != nil {
@@ -79,7 +79,7 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //gti:add
 }
 
 // V1sOut contains output tensors for V1 Simple filtering, one per opponnent
-type V1sOut struct { //gti:add
+type V1sOut struct { //types:add
 
 	// V1 simple gabor filter output tensor
 	Tsr etensor.Float32 `view:"no-inline"`
@@ -97,7 +97,7 @@ type V1sOut struct { //gti:add
 // Vis encapsulates specific visual processing pipeline in
 // use in a given case -- can add / modify this as needed.
 // Handles 3 major opponent channels: WhiteBlack, RedGreen, BlueYellow
-type Vis struct { //gti:add
+type Vis struct { //types:add
 
 	// if true, do full color filtering -- else Black/White only
 	Color bool
@@ -287,7 +287,7 @@ func (vi *Vis) V1All() {
 
 // Filter is overall method to run filters on current image file name
 // loads the image from ImageFile and then runs filters
-func (vi *Vis) Filter() error { //gti:add
+func (vi *Vis) Filter() error { //types:add
 	err := vi.Img.OpenImage(string(vi.Img.File), vi.V1sGeom.FiltRt.X)
 	if err != nil {
 		log.Println(err)

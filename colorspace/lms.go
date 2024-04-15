@@ -4,7 +4,7 @@
 
 package colorspace
 
-//go:generate core generate
+//go:generate core generate -add-types
 
 import (
 	"cogentcore.org/core/math32"
