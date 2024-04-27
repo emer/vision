@@ -130,6 +130,6 @@ func (vi *Vis) ConfigGUI() *core.Body {
 		views.NewFuncButton(tb, vi.Filter)
 	})
 
-	b.NewWindow().Run().Wait()
+	b.RunMainWindow()
 	return b
 }
