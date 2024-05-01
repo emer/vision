@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -21,11 +21,11 @@ import (
 // size must = spacing or 2 * spacing.
 // Pooling is sensitive to the feature structure of the input, which
 // must have shape: Y, X, Polarities, Angles.
-func UnPool(psize, spc image.Point, in, out *etensor.Float32, rnd bool) {
-	ny := in.Dim(0)
-	nx := in.Dim(1)
-	pol := in.Dim(2)
-	nang := in.Dim(3)
+func UnPool(psize, spc image.Point, in, out *tensor.Float32, rnd bool) {
+	ny := in.DimSize(0)
+	nx := in.DimSize(1)
+	pol := in.DimSize(2)
+	nang := in.DimSize(3)
 	oy := ny / int(spc.Y)
 	ox := nx / int(spc.X)
 	if spc.Y != psize.Y {
@@ -36,7 +36,7 @@ func UnPool(psize, spc image.Point, in, out *etensor.Float32, rnd bool) {
 	}
 
 	oshp := []int{oy, ox, pol, nang}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
 	}
 	nf := pol * nang
@@ -57,10 +57,10 @@ func UnPool(psize, spc image.Point, in, out *etensor.Float32, rnd bool) {
 }
 
 // unPoolThr is per-thread implementation
-func unPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *etensor.Float32, rnd bool) {
-	ny := out.Dim(0)
-	nx := out.Dim(1)
-	nang := out.Dim(3)
+func unPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *tensor.Float32, rnd bool) {
+	ny := out.DimSize(0)
+	nx := out.DimSize(1)
+	nang := out.DimSize(3)
 	psz := psize.X * psize.Y
 	for fi := 0; fi < nf; fi++ {
 		f := fno + fi

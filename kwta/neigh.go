@@ -6,7 +6,7 @@ package kwta
 
 import (
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // NeighInhib adds an additional inhibition factor based on the same
@@ -45,17 +45,17 @@ func (ni *NeighInhib) Defaults() {
 // made so (most efficient to re-use same structure).
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
-func (ni *NeighInhib) Inhib4(act, extGi *etensor.Float32) {
+func (ni *NeighInhib) Inhib4(act, extGi *tensor.Float32) {
 	if !extGi.Shape.IsEqual(&act.Shape) {
 		extGi.SetShape(act.Shape.Shp, act.Shape.Strd, act.Shape.Nms)
 	}
 	gis := extGi.Values
 
-	layY := act.Dim(0)
-	layX := act.Dim(1)
+	layY := act.DimSize(0)
+	layX := act.DimSize(1)
 
-	plY := act.Dim(2)
-	plX := act.Dim(3)
+	plY := act.DimSize(2)
+	plX := act.DimSize(3)
 	plN := plY * plX
 
 	pi := 0

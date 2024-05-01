@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -43,15 +43,15 @@ var (
 // of feature.  Both directions are computed, as two rows by angles.
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
-func EndStop4(act, lsum, estop *etensor.Float32) {
-	layY := act.Dim(0)
-	layX := act.Dim(1)
+func EndStop4(act, lsum, estop *tensor.Float32) {
+	layY := act.DimSize(0)
+	layX := act.DimSize(1)
 
-	plY := act.Dim(2)
-	nang := act.Dim(3)
+	plY := act.DimSize(2)
+	nang := act.DimSize(3)
 
 	oshp := []int{layY, layX, 2 * plY, nang} // 2 = 2 directions
-	if !etensor.EqualInts(oshp, estop.Shp) {
+	if !tensor.EqualInts(oshp, estop.Shp) {
 		estop.SetShape(oshp, nil, []string{"Y", "X", "Dir", "Angle"})
 	}
 	ncpu := nproc.NumCPU()
@@ -71,11 +71,11 @@ func EndStop4(act, lsum, estop *etensor.Float32) {
 }
 
 // endStop4Thr is per-thread implementation
-func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *etensor.Float32) {
-	layY := act.Dim(0)
-	layX := act.Dim(1)
+func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *tensor.Float32) {
+	layY := act.DimSize(0)
+	layX := act.DimSize(1)
 
-	nang := act.Dim(3)
+	nang := act.DimSize(3)
 
 	for fi := 0; fi < nf; fi++ {
 		ui := fno + fi

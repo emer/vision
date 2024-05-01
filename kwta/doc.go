@@ -4,7 +4,7 @@
 
 /*
 package kwta provides the Leabra k-Winners-Take-All inhibition function
-in a form that can be applied to an etensor of float32 values
+in a form that can be applied to an tensor of float32 values
 as computed by visual (or other modality) filtering routines.
 
 The inhibition is computed using the FFFB feedforward-feedback function

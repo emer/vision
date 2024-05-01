@@ -9,16 +9,16 @@ import (
 	"image/color"
 
 	"cogentcore.org/core/colors"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
-// RGBToTensor converts an RGB input image to an RGB etensor
+// RGBToTensor converts an RGB input image to an RGB tensor
 // with outer dimension as RGB components.
 // padWidth is the amount of padding to add on all sides.
 // topZero retains the Y=0 value at the top of the tensor --
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
-func RGBToTensor(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
+func RGBToTensor(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
 	tsr.SetShape([]int{3, sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"RGB", "Y", "X"})
@@ -37,17 +37,17 @@ func RGBToTensor(img image.Image, tsr *etensor.Float32, padWidth int, topZero bo
 	}
 }
 
-// RGBTensorToImage converts an RGB etensor to image -- uses
+// RGBTensorToImage converts an RGB tensor to image -- uses
 // existing image if it is of correct size, otherwise makes a new one.
-// etensor must have outer dimension as RGB components.
+// tensor must have outer dimension as RGB components.
 // padWidth is the amount of padding to subtract from all sides.
 // topZero retains the Y=0 value at the top of the tensor --
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
-func RGBTensorToImage(img *image.RGBA, tsr *etensor.Float32, padWidth int, topZero bool) *image.RGBA {
+func RGBTensorToImage(img *image.RGBA, tsr *tensor.Float32, padWidth int, topZero bool) *image.RGBA {
 	var sz image.Point
-	sz.Y = tsr.Dim(1) - 2*padWidth
-	sz.X = tsr.Dim(2) - 2*padWidth
+	sz.Y = tsr.DimSize(1) - 2*padWidth
+	sz.X = tsr.DimSize(2) - 2*padWidth
 	if img == nil {
 		img = image.NewRGBA(image.Rectangle{Max: sz})
 	} else {
@@ -74,13 +74,13 @@ func RGBTensorToImage(img *image.RGBA, tsr *etensor.Float32, padWidth int, topZe
 	return img
 }
 
-// RGBToGrey converts an RGB input image to a greyscale etensor
+// RGBToGrey converts an RGB input image to a greyscale tensor
 // in preparation for processing.
 // padWidth is the amount of padding to add on all sides.
 // topZero retains the Y=0 value at the top of the tensor --
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
-func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
+func RGBToGrey(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
 	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"Y", "X"})
@@ -104,10 +104,10 @@ func RGBToGrey(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool
 // topZero retains the Y=0 value at the top of the tensor --
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
-func GreyTensorToImage(img *image.Gray, tsr *etensor.Float32, padWidth int, topZero bool) *image.Gray {
+func GreyTensorToImage(img *image.Gray, tsr *tensor.Float32, padWidth int, topZero bool) *image.Gray {
 	var sz image.Point
-	sz.Y = tsr.Dim(0) - 2*padWidth
-	sz.X = tsr.Dim(1) - 2*padWidth
+	sz.Y = tsr.DimSize(0) - 2*padWidth
+	sz.X = tsr.DimSize(1) - 2*padWidth
 	if img == nil {
 		img = image.NewGray(image.Rectangle{Max: sz})
 	} else {
@@ -133,8 +133,8 @@ func GreyTensorToImage(img *image.Gray, tsr *etensor.Float32, padWidth int, topZ
 // WrapPad wraps given padding width of float32 image around sides
 // i.e., padding for left side of image is the (mirrored) bits
 // from the right side of image, etc.
-func WrapPad(tsr *etensor.Float32, padWidth int) {
-	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+func WrapPad(tsr *tensor.Float32, padWidth int) {
+	sz := image.Point{tsr.DimSize(1), tsr.DimSize(0)}
 	usz := sz
 	usz.Y -= padWidth
 	usz.X -= padWidth
@@ -176,18 +176,18 @@ func WrapPad(tsr *etensor.Float32, padWidth int) {
 // i.e., padding for left side of image is the (mirrored) bits
 // from the right side of image, etc.
 // RGB version iterates over outer-most dimension of components.
-func WrapPadRGB(tsr *etensor.Float32, padWidth int) {
-	nc := tsr.Dim(0)
+func WrapPadRGB(tsr *tensor.Float32, padWidth int) {
+	nc := tsr.DimSize(0)
 	for i := 0; i < nc; i++ {
-		simg := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		simg := tsr.SubSpace([]int{i}).(*tensor.Float32)
 		WrapPad(simg, padWidth)
 	}
 }
 
 // EdgeAvg returns the average value around the effective edge of image
 // at padWidth in from each side
-func EdgeAvg(tsr *etensor.Float32, padWidth int) float32 {
-	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+func EdgeAvg(tsr *tensor.Float32, padWidth int) float32 {
+	sz := image.Point{tsr.DimSize(1), tsr.DimSize(0)}
 	esz := sz
 	esz.X -= 2 * padWidth
 	esz.Y -= 2 * padWidth
@@ -210,8 +210,8 @@ func EdgeAvg(tsr *etensor.Float32, padWidth int) float32 {
 
 // FadePad fades given padding width of float32 image around sides
 // gradually fading the edge value toward a mean edge value
-func FadePad(tsr *etensor.Float32, padWidth int) {
-	sz := image.Point{tsr.Dim(1), tsr.Dim(0)}
+func FadePad(tsr *tensor.Float32, padWidth int) {
+	sz := image.Point{tsr.DimSize(1), tsr.DimSize(0)}
 	usz := sz
 	usz.Y -= padWidth
 	usz.X -= padWidth
@@ -271,10 +271,10 @@ func FadePad(tsr *etensor.Float32, padWidth int) {
 // FadePadRGB fades given padding width of float32 image around sides
 // gradually fading the edge value toward a mean edge value.
 // RGB version iterates over outer-most dimension of components.
-func FadePadRGB(tsr *etensor.Float32, padWidth int) {
-	nc := tsr.Dim(0)
+func FadePadRGB(tsr *tensor.Float32, padWidth int) {
+	nc := tsr.DimSize(0)
 	for i := 0; i < nc; i++ {
-		simg := tsr.SubSpace([]int{i}).(*etensor.Float32)
+		simg := tsr.SubSpace([]int{i}).(*tensor.Float32)
 		FadePad(simg, padWidth)
 	}
 }

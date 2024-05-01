@@ -5,14 +5,14 @@
 package colorspace
 
 import (
+	"cogentcore.org/core/tensor"
 	"github.com/emer/emergent/v2/evec"
-	"github.com/emer/etable/v2/etensor"
 )
 
 // MacbethImage sets the Macbeth standard color test image to given tensor
 // with given size and border width around edges.
 // if img == nil it is created, and size enforced.
-func MacbethImage(img *etensor.Float32, width, height, bord int) {
+func MacbethImage(img *tensor.Float32, width, height, bord int) {
 	sRGBvals := []int{115, 82, 68, // 'Dark Skin';
 		194, 150, 130, // 'Light Skin';
 		98, 122, 157, // 'Blue Sky';
@@ -50,7 +50,7 @@ func MacbethImage(img *etensor.Float32, width, height, bord int) {
 	sqSz := netSz.Div(nsq)
 
 	if img == nil {
-		img = &etensor.Float32{}
+		img = &tensor.Float32{}
 	}
 	img.SetShape([]int{3, sz.Y, sz.X}, nil, []string{"Y", "X", "RGB"})
 

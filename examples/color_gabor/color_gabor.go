@@ -10,14 +10,14 @@ import (
 	"image"
 	"log"
 
+	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/iox/imagex"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/norm"
+	"cogentcore.org/core/tensor/table"
+	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
 	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	_ "github.com/emer/etable/v2/etview" // include to get gui views
-	"github.com/emer/etable/v2/norm"
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/gabor"
@@ -47,10 +47,10 @@ type V1Img struct { //types:add
 	Img image.Image `view:"-"`
 
 	// input image as an RGB tensor
-	Tsr etensor.Float32 `view:"no-inline"`
+	Tsr tensor.Float32 `view:"no-inline"`
 
 	// LMS components + opponents tensor version of image
-	LMS etensor.Float32 `view:"no-inline"`
+	LMS tensor.Float32 `view:"no-inline"`
 }
 
 func (vi *V1Img) Defaults() {
@@ -82,16 +82,16 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //types:add
 type V1sOut struct { //types:add
 
 	// V1 simple gabor filter output tensor
-	Tsr etensor.Float32 `view:"no-inline"`
+	Tsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple extra Gi from neighbor inhibition tensor
-	ExtGiTsr etensor.Float32 `view:"no-inline"`
+	ExtGiTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, kwta output tensor
-	KwtaTsr etensor.Float32 `view:"no-inline"`
+	KwtaTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor
-	PoolTsr etensor.Float32 `view:"no-inline"`
+	PoolTsr tensor.Float32 `view:"no-inline"`
 }
 
 // Vis encapsulates specific visual processing pipeline in
@@ -124,40 +124,40 @@ type Vis struct { //types:add
 	V1sKWTA kwta.KWTA
 
 	// V1 simple gabor filter tensor
-	V1sGaborTsr etensor.Float32 `view:"no-inline"`
+	V1sGaborTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab etable.Table `view:"no-inline"`
+	V1sGaborTab table.Table `view:"no-inline"`
 
 	// V1 simple gabor filter output, per channel
 	V1s [colorspace.OpponentsN]V1sOut `view:"inline"`
 
 	// max over V1 simple gabor filters output tensor
-	V1sMaxTsr etensor.Float32 `view:"no-inline"`
+	V1sMaxTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor
-	V1sPoolTsr etensor.Float32 `view:"no-inline"`
+	V1sPoolTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, un-max-pooled 2x2 of Pool tensor
-	V1sUnPoolTsr etensor.Float32 `view:"no-inline"`
+	V1sUnPoolTsr tensor.Float32 `view:"no-inline"`
 
 	// input image reconstructed from V1s tensor
-	ImgFromV1sTsr etensor.Float32 `view:"no-inline"`
+	ImgFromV1sTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, angle-only features tensor
-	V1sAngOnlyTsr etensor.Float32 `view:"no-inline"`
+	V1sAngOnlyTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor
-	V1sAngPoolTsr etensor.Float32 `view:"no-inline"`
+	V1sAngPoolTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 complex length sum filter output tensor
-	V1cLenSumTsr etensor.Float32 `view:"no-inline"`
+	V1cLenSumTsr tensor.Float32 `view:"no-inline"`
 
 	// V1 complex end stop filter output tensor
-	V1cEndStopTsr etensor.Float32 `view:"no-inline"`
+	V1cEndStopTsr tensor.Float32 `view:"no-inline"`
 
 	// Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total (9 if SepColor)
-	V1AllTsr etensor.Float32 `view:"no-inline"`
+	V1AllTsr tensor.Float32 `view:"no-inline"`
 
 	// inhibition values for V1s KWTA
 	V1sInhibs fffb.Inhibs `view:"no-inline"`
@@ -183,14 +183,14 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
-	vi.V1sGaborTab.Cols[1].SetMetaData("max", "0.05")
-	vi.V1sGaborTab.Cols[1].SetMetaData("min", "-0.05")
+	vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
+	vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
 }
 
 // V1SimpleImg runs V1Simple Gabor filtering on input image
 // Runs kwta and pool steps after gabor filter.
 // has extra gain factor -- > 1 for color contrasts.
-func (vi *Vis) V1SimpleImg(v1s *V1sOut, img *etensor.Float32, gain float32) {
+func (vi *Vis) V1SimpleImg(v1s *V1sOut, img *tensor.Float32, gain float32) {
 	vfilter.Conv(&vi.V1sGeom, &vi.V1sGaborTsr, img, &v1s.Tsr, gain*vi.V1sGabor.Gain)
 	if vi.V1sNeighInhib.On {
 		vi.V1sNeighInhib.Inhib4(&v1s.Tsr, &v1s.ExtGiTsr)
@@ -206,17 +206,17 @@ func (vi *Vis) V1SimpleImg(v1s *V1sOut, img *etensor.Float32, gain float32) {
 
 // V1Simple runs all V1Simple Gabor filtering, depending on Color
 func (vi *Vis) V1Simple() {
-	grey := vi.Img.LMS.SubSpace([]int{int(colorspace.GREY)}).(*etensor.Float32)
+	grey := vi.Img.LMS.SubSpace([]int{int(colorspace.GREY)}).(*tensor.Float32)
 	wbout := &vi.V1s[colorspace.WhiteBlack]
 	vi.V1SimpleImg(wbout, grey, 1)
 	vi.V1sMaxTsr.CopyShapeFrom(&wbout.KwtaTsr)
 	vi.V1sMaxTsr.CopyFrom(&wbout.KwtaTsr)
 	if vi.Color {
 		rgout := &vi.V1s[colorspace.RedGreen]
-		rgimg := vi.Img.LMS.SubSpace([]int{int(colorspace.LvMC)}).(*etensor.Float32)
+		rgimg := vi.Img.LMS.SubSpace([]int{int(colorspace.LvMC)}).(*tensor.Float32)
 		vi.V1SimpleImg(rgout, rgimg, vi.ColorGain)
 		byout := &vi.V1s[colorspace.BlueYellow]
-		byimg := vi.Img.LMS.SubSpace([]int{int(colorspace.SvLMC)}).(*etensor.Float32)
+		byimg := vi.Img.LMS.SubSpace([]int{int(colorspace.SvLMC)}).(*tensor.Float32)
 		vi.V1SimpleImg(byout, byimg, vi.ColorGain)
 		for i, vl := range vi.V1sMaxTsr.Values {
 			rg := rgout.KwtaTsr.Values[i]
@@ -236,7 +236,7 @@ func (vi *Vis) V1Simple() {
 func (vi *Vis) ImgFromV1Simple() {
 	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sMaxTsr)
 	vi.V1sUnPoolTsr.SetZeros()
-	vi.ImgFromV1sTsr.SetShape(vi.Img.Tsr.Shapes()[1:], nil, []string{"Y", "X"})
+	vi.ImgFromV1sTsr.SetShape(vi.Img.Tsr.Shape().Sizes[1:], nil, []string{"Y", "X"})
 	vi.ImgFromV1sTsr.SetZeros()
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
@@ -257,15 +257,15 @@ func (vi *Vis) V1Complex() {
 // V1All aggregates all the relevant simple and complex features
 // into the V1AllTsr which is used for input to a network
 func (vi *Vis) V1All() {
-	ny := vi.V1sPoolTsr.Dim(0)
-	nx := vi.V1sPoolTsr.Dim(1)
-	nang := vi.V1sPoolTsr.Dim(3)
+	ny := vi.V1sPoolTsr.DimSize(0)
+	nx := vi.V1sPoolTsr.DimSize(1)
+	nang := vi.V1sPoolTsr.DimSize(3)
 	nrows := 5
 	if vi.Color && vi.SepColor {
 		nrows += 4
 	}
 	oshp := []int{ny, nx, nrows, nang}
-	if !etensor.EqualInts(oshp, vi.V1AllTsr.Shp) {
+	if !tensor.EqualInts(oshp, vi.V1AllTsr.Shp) {
 		vi.V1AllTsr.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
 	}
 	// 1 length-sum

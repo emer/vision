@@ -10,13 +10,13 @@ import (
 	"image"
 	"log"
 
+	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/iox/imagex"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
+	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
 	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	_ "github.com/emer/etable/v2/etview" // include to get gui views
 	"github.com/emer/vision/v2/dog"
 	"github.com/emer/vision/v2/vfilter"
 )
@@ -45,19 +45,19 @@ type Vis struct { //types:add
 	ImgSize image.Point
 
 	// DoG filter tensor -- has 3 filters (on, off, net)
-	DoGTsr etensor.Float32 `view:"no-inline"`
+	DoGTsr tensor.Float32 `view:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab etable.Table `view:"no-inline"`
+	DoGTab table.Table `view:"no-inline"`
 
 	// current input image
 	Img image.Image `view:"-"`
 
 	// input image as tensor
-	ImgTsr etensor.Float32 `view:"no-inline"`
+	ImgTsr tensor.Float32 `view:"no-inline"`
 
 	// DoG filter output tensor
-	OutTsr etensor.Float32 `view:"no-inline"`
+	OutTsr tensor.Float32 `view:"no-inline"`
 }
 
 func (vi *Vis) Defaults() {
@@ -74,8 +74,8 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	vi.DoGTab.Cols[1].SetMetaData("max", "0.2")
-	vi.DoGTab.Cols[1].SetMetaData("min", "-0.2")
+	vi.DoGTab.Columns[1].SetMetaData("max", "0.2")
+	vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
 }
 
 // OpenImage opens given filename as current image Img

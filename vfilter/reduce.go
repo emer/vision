@@ -7,19 +7,19 @@ package vfilter
 import (
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
 // MaxReduceFilterY performs max-pooling reduce over inner Filter Y
 // dimension (polarities, colors)
 // must have shape: Y, X, Polarities, Angles.
-func MaxReduceFilterY(in, out *etensor.Float32) {
-	ny := in.Dim(0)
-	nx := in.Dim(1)
-	nang := in.Dim(3)
+func MaxReduceFilterY(in, out *tensor.Float32) {
+	ny := in.DimSize(0)
+	nx := in.DimSize(1)
+	nang := in.DimSize(3)
 	oshp := []int{ny, nx, 1, nang}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
 	}
 	ncpu := nproc.NumCPU()
@@ -39,10 +39,10 @@ func MaxReduceFilterY(in, out *etensor.Float32) {
 }
 
 // maxReduceFilterYThr is per-thread implementation
-func maxReduceFilterYThr(wg *sync.WaitGroup, fno, nf int, in, out *etensor.Float32) {
-	ny := in.Dim(0)
-	nx := in.Dim(1)
-	np := in.Dim(2)
+func maxReduceFilterYThr(wg *sync.WaitGroup, fno, nf int, in, out *tensor.Float32) {
+	ny := in.DimSize(0)
+	nx := in.DimSize(1)
+	np := in.DimSize(2)
 	for fi := 0; fi < nf; fi++ {
 		ang := fno + fi
 		for y := 0; y < ny; y++ {

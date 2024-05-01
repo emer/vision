@@ -7,7 +7,7 @@ package colorspace
 import (
 	"image"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/vfilter"
 )
 
@@ -17,8 +17,8 @@ import (
 // topZero retains the Y=0 value at the top of the tensor --
 // otherwise it is flipped with Y=0 at the bottom to be consistent
 // with the emergent / OpenGL standard coordinate system
-func RGBImgToLMSComps(img image.Image, tsr *etensor.Float32, padWidth int, topZero bool) {
-	rgbtsr := &etensor.Float32{}
+func RGBImgToLMSComps(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
+	rgbtsr := &tensor.Float32{}
 	vfilter.RGBToTensor(img, rgbtsr, padWidth, topZero)
 	RGBTensorToLMSComps(rgbtsr, tsr)
 }
@@ -26,9 +26,9 @@ func RGBImgToLMSComps(img image.Image, tsr *etensor.Float32, padWidth int, topZe
 // RGBTensorToLMSComps converts an RGB Tensor to corresponding LMS components
 // including color opponents, with components as the outer-most dimension,
 // and assumes rgb is 3 dimensional with outer-most dimension as RGB.
-func RGBTensorToLMSComps(tsr *etensor.Float32, rgb *etensor.Float32) {
-	sy := rgb.Dim(1)
-	sx := rgb.Dim(2)
+func RGBTensorToLMSComps(tsr *tensor.Float32, rgb *tensor.Float32) {
+	sy := rgb.DimSize(1)
+	sx := rgb.DimSize(2)
 	tsr.SetShape([]int{int(LMSComponentsN), sy, sx}, nil, []string{"LMS", "Y", "X"})
 	for y := 0; y < sy; y++ {
 		for x := 0; x < sx; x++ {

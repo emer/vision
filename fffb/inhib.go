@@ -6,7 +6,7 @@ package fffb
 
 //go:generate core generate -add-types
 
-import "github.com/emer/etable/v2/minmax"
+import "cogentcore.org/core/math32/minmax"
 
 // Inhib contains state values for computed FFFB inhibition
 type Inhib struct {

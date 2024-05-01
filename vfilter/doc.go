@@ -4,14 +4,14 @@
 
 /*
 Package vfilter provides filtering methods for the vision package.
-These apply etensor.Tensor filters to a 2D visual input via Conv
+These apply tensor.Tensor filters to a 2D visual input via Conv
 (convolution) function, using filter-parallel approach:
 Each go routine does a different filter in a set of filters,
 e.g., different angles of Gabor filters.  This is coarse-grained,
 strictly parallel, and thus very efficient.
 
 image.go contains routines for converting an image into the float32
-etensor.Float32 that is required for doing the convolution.
+tensor.Float32 that is required for doing the convolution.
 * RGBToGrey converts an RGB image to a greyscale float32.
 
 MaxPool function does Max-pooling over filtered results to reduce

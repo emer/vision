@@ -8,7 +8,7 @@ import (
 	"image"
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -18,20 +18,20 @@ import (
 // done in the padding process, which is much more efficient.
 // Computation is parallel in image lines.
 // img must be a 2D tensor of image values (convert RGB to grey first).
-// Everything must be organized row major as etensor default.
+// Everything must be organized row major as tensor default.
 // Output has 2 outer dims for positive vs. negative values, inner is Y, X
 // todo: add option to interleave polarity as inner-most dim.
-func Conv1(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
-	fy := flt.Dim(0)
-	fx := flt.Dim(1)
+func Conv1(geom *Geom, flt *tensor.Float32, img, out *tensor.Float32, gain float32) {
+	fy := flt.DimSize(0)
+	fx := flt.DimSize(1)
 
 	geom.FiltSz = image.Point{fx, fy}
 	geom.UpdtFilt()
 
-	imgSz := image.Point{img.Dim(1), img.Dim(0)}
+	imgSz := image.Point{img.DimSize(1), img.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{2, int(geom.Out.Y), int(geom.Out.X)}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"OnOff", "Y", "X"})
 	}
 	ncpu := nproc.NumCPU()
@@ -51,7 +51,7 @@ func Conv1(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32, gain flo
 }
 
 // conv1Thr is per-thread implementation
-func conv1Thr(wg *sync.WaitGroup, geom *Geom, yst, ny int, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
+func conv1Thr(wg *sync.WaitGroup, geom *Geom, yst, ny int, flt *tensor.Float32, img, out *tensor.Float32, gain float32) {
 	ist := geom.Border.Sub(geom.FiltLt)
 	for yi := 0; yi < ny; yi++ {
 		y := yst + yi

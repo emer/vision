@@ -8,8 +8,8 @@ import (
 	"math"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
-	"github.com/emer/etable/v2/norm"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/norm"
 )
 
 // TensorLogNorm32 computes 1 + log of all the numbers and then does
@@ -17,7 +17,7 @@ import (
 // computed on the first ndim dims of the tensor, where 0 = all values,
 // 1 = norm each of the sub-dimensions under the first outer-most dimension etc.
 // ndim must be < NumDims() if not 0 (panics).
-func TensorLogNorm32(tsr *etensor.Float32, ndim int) {
+func TensorLogNorm32(tsr *tensor.Float32, ndim int) {
 	for i, v := range tsr.Values {
 		tsr.Values[i] = math32.Log(1 + v)
 	}
@@ -29,7 +29,7 @@ func TensorLogNorm32(tsr *etensor.Float32, ndim int) {
 // computed on the first ndim dims of the tensor, where 0 = all values,
 // 1 = norm each of the sub-dimensions under the first outer-most dimension etc.
 // ndim must be < NumDims() if not 0 (panics).
-func TensorLogNorm64(tsr *etensor.Float64, ndim int) {
+func TensorLogNorm64(tsr *tensor.Float64, ndim int) {
 	for i, v := range tsr.Values {
 		tsr.Values[i] = math.Log(1 + v)
 	}

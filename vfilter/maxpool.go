@@ -8,7 +8,7 @@ import (
 	"image"
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -16,11 +16,11 @@ import (
 // size must = spacing or 2 * spacing.
 // Pooling is sensitive to the feature structure of the input, which
 // must have shape: Y, X, Polarities, Angles.
-func MaxPool(psize, spc image.Point, in, out *etensor.Float32) {
-	ny := in.Dim(0)
-	nx := in.Dim(1)
-	pol := in.Dim(2)
-	nang := in.Dim(3)
+func MaxPool(psize, spc image.Point, in, out *tensor.Float32) {
+	ny := in.DimSize(0)
+	nx := in.DimSize(1)
+	pol := in.DimSize(2)
+	nang := in.DimSize(3)
 	oy := ny / int(spc.Y)
 	ox := nx / int(spc.X)
 	if spc.Y != psize.Y {
@@ -31,7 +31,7 @@ func MaxPool(psize, spc image.Point, in, out *etensor.Float32) {
 	}
 
 	oshp := []int{oy, ox, pol, nang}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
 	}
 	nf := pol * nang
@@ -52,10 +52,10 @@ func MaxPool(psize, spc image.Point, in, out *etensor.Float32) {
 }
 
 // maxPoolThr is per-thread implementation
-func maxPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *etensor.Float32) {
-	ny := out.Dim(0)
-	nx := out.Dim(1)
-	nang := out.Dim(3)
+func maxPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out *tensor.Float32) {
+	ny := out.DimSize(0)
+	nx := out.DimSize(1)
+	nang := out.DimSize(3)
 	for fi := 0; fi < nf; fi++ {
 		f := fno + fi
 		pol := f / nang

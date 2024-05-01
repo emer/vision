@@ -6,7 +6,7 @@ package colorspace
 
 import (
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // SRGBToOp implements a lookup-table for the conversion of
@@ -20,7 +20,7 @@ type SRGBToOp struct {
 	Levels int
 
 	// lookup table
-	Table etensor.Float32
+	Table tensor.Float32
 }
 
 // TheSRGBToOp is the instance of SRGBToOp to use

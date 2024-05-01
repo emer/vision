@@ -10,7 +10,7 @@ import (
 	"log"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/nxx1"
 )
@@ -103,7 +103,7 @@ func (kwta *KWTA) ActFromG(geThr, ge, act float32) (nwAct, delAct float32) {
 // entire set of tensor values.
 // extGi is extra / external Gi inhibition per unit
 // -- e.g. from neighbor inhib -- must be size of raw, act.
-func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
+func (kwta *KWTA) KWTALayer(raw, act, extGi *tensor.Float32) {
 	inhib := fffb.Inhib{}
 	raws := raw.Values // these are ge
 
@@ -158,7 +158,7 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *etensor.Float32) {
 // For best performance store this and reuse to avoid memory allocations.
 // extGi is extra / external Gi inhibition per unit
 // -- e.g. from neighbor inhib -- must be size of raw, act.
-func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi *etensor.Float32) {
+func (kwta *KWTA) KWTAPool(raw, act *tensor.Float32, inhib *fffb.Inhibs, extGi *tensor.Float32) {
 	layInhib := fffb.Inhib{}
 
 	raws := raw.Values // these are ge
@@ -175,12 +175,12 @@ func (kwta *KWTA) KWTAPool(raw, act *etensor.Float32, inhib *fffb.Inhibs, extGi 
 
 	acts := act.Values
 
-	layY := raw.Dim(0)
-	layX := raw.Dim(1)
+	layY := raw.DimSize(0)
+	layX := raw.DimSize(1)
 	layN := layY * layX
 
-	plY := raw.Dim(2)
-	plX := raw.Dim(3)
+	plY := raw.DimSize(2)
+	plX := raw.DimSize(3)
 	plN := plY * plX
 
 	if len(*inhib) < layN {

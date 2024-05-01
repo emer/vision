@@ -11,9 +11,11 @@ package dog
 //go:generate core generate -add-types
 
 import (
+	"reflect"
+
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
 )
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.
@@ -84,10 +86,10 @@ func GaussDenSig(x, sig float32) float32 {
 	return 0.398942280 * math32.Exp(-0.5*x*x) / sig
 }
 
-// ToTensor renders dog filters into the given etable etensor.Tensor,
+// ToTensor renders dog filters into the given table tensor.Tensor,
 // setting dimensions to [3][Y][X] where Y = X = Size, and
 // first one is On-filter, second is Off-filter, and third is Net On - Off
-func (gf *Filter) ToTensor(tsr *etensor.Float32) {
+func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 	tsr.SetShape([]int{int(FiltersN), gf.Size, gf.Size}, nil, []string{"3", "Y", "X"})
 
 	ctr := 0.5 * float32(gf.Size-1)
@@ -139,25 +141,25 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	}
 }
 
-// ToTable renders filters into the given etable.Table
+// ToTable renders filters into the given table.Table
 // setting a column named Version and  a column named Filter
 // to the filter for that version (on, off, net)
 // This is useful for display and validation purposes.
-func (gf *Filter) ToTable(tab *etable.Table) {
-	tab.SetFromSchema(etable.Schema{
-		{"Version", etensor.STRING, nil, nil},
-		{"Filter", etensor.FLOAT32, []int{int(FiltersN), gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
+func (gf *Filter) ToTable(tab *table.Table) {
+	tab.SetFromSchema(table.Schema{
+		{"Version", tensor.STRING, nil, nil},
+		{"Filter", reflect.Float32, []int{int(FiltersN), gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
 	}, 3)
-	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
-	tab.SetCellStringIndex(0, int(On), "On")
-	tab.SetCellStringIndex(0, int(Off), "Off")
-	tab.SetCellStringIndex(0, int(Net), "Net")
+	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
+	tab.SetStringIndex(0, int(On), "On")
+	tab.SetStringIndex(0, int(Off), "Off")
+	tab.SetStringIndex(0, int(Net), "Net")
 }
 
 // FilterTensor extracts the given filter subspace from set of 3 filters in input tensor
 // 0 = On, 1 = Off, 2 = Net
-func (gf *Filter) FilterTensor(tsr *etensor.Float32, filt Filters) *etensor.Float32 {
-	return tsr.SubSpace([]int{int(filt)}).(*etensor.Float32)
+func (gf *Filter) FilterTensor(tsr *tensor.Float32, filt Filters) *tensor.Float32 {
+	return tsr.SubSpace([]int{int(filt)}).(*tensor.Float32)
 }
 
 // Filters is the type of filter

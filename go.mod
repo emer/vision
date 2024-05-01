@@ -6,7 +6,6 @@ require (
 	cogentcore.org/core v0.1.0
 	github.com/anthonynsimon/bild v0.13.0
 	github.com/emer/emergent/v2 v2.0.0-dev0.0.14
-	github.com/emer/etable/v2 v2.0.0-dev0.0.19
 )
 
 require (

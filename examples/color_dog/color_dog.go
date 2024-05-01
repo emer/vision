@@ -10,13 +10,13 @@ import (
 	"image"
 	"log"
 
+	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/iox/imagex"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
+	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
 	"cogentcore.org/core/views"
 	"github.com/anthonynsimon/bild/transform"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
-	_ "github.com/emer/etable/v2/etview" // include to get gui views
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/dog"
 	"github.com/emer/vision/v2/vfilter"
@@ -55,25 +55,25 @@ type Vis struct { //types:add
 	ImgSize image.Point
 
 	// DoG filter tensor -- has 3 filters (on, off, net)
-	DoGTsr etensor.Float32 `view:"no-inline"`
+	DoGTsr tensor.Float32 `view:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab etable.Table `view:"no-inline"`
+	DoGTab table.Table `view:"no-inline"`
 
 	// current input image
 	Img image.Image `view:"-"`
 
 	// input image as RGB tensor
-	ImgTsr etensor.Float32 `view:"no-inline"`
+	ImgTsr tensor.Float32 `view:"no-inline"`
 
 	// LMS components + opponents tensor version of image
-	ImgLMS etensor.Float32 `view:"no-inline"`
+	ImgLMS tensor.Float32 `view:"no-inline"`
 
 	// output from 3 dogs with different tuning
-	OutAll etensor.Float32 `view:"no-inline"`
+	OutAll tensor.Float32 `view:"no-inline"`
 
 	// DoG filter output tensors
-	OutTsrs map[string]*etensor.Float32 `view:"no-inline"`
+	OutTsrs map[string]*tensor.Float32 `view:"no-inline"`
 }
 
 func (vi *Vis) Defaults() {
@@ -100,19 +100,19 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	vi.DoGTab.Cols[1].SetMetaData("max", "0.2")
-	vi.DoGTab.Cols[1].SetMetaData("min", "-0.2")
-	vi.OutTsrs = make(map[string]*etensor.Float32)
+	vi.DoGTab.Columns[1].SetMetaData("max", "0.2")
+	vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
+	vi.OutTsrs = make(map[string]*tensor.Float32)
 }
 
 // OutTsr gets output tensor of given name, creating if not yet made
-func (vi *Vis) OutTsr(name string) *etensor.Float32 {
+func (vi *Vis) OutTsr(name string) *tensor.Float32 {
 	if vi.OutTsrs == nil {
-		vi.OutTsrs = make(map[string]*etensor.Float32)
+		vi.OutTsrs = make(map[string]*tensor.Float32)
 	}
 	tsr, ok := vi.OutTsrs[name]
 	if !ok {
-		tsr = &etensor.Float32{}
+		tsr = &tensor.Float32{}
 		vi.OutTsrs[name] = tsr
 		tsr.SetMetaData("grid-fill", "1")
 	}
@@ -160,23 +160,23 @@ func (vi *Vis) OpenMacbeth() error {
 // ColorDoG runs color contrast DoG filtering on input image
 // must have valid Img in place to start.
 func (vi *Vis) ColorDoG() {
-	rimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LC)}).(*etensor.Float32)
-	gimg := vi.ImgLMS.SubSpace([]int{int(colorspace.MC)}).(*etensor.Float32)
+	rimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LC)}).(*tensor.Float32)
+	gimg := vi.ImgLMS.SubSpace([]int{int(colorspace.MC)}).(*tensor.Float32)
 	rimg.SetMetaData("grid-fill", "1")
 	gimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Red"] = rimg
 	vi.OutTsrs["Green"] = gimg
 
-	bimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SC)}).(*etensor.Float32)
-	yimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LMC)}).(*etensor.Float32)
+	bimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SC)}).(*tensor.Float32)
+	yimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LMC)}).(*tensor.Float32)
 	bimg.SetMetaData("grid-fill", "1")
 	yimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue"] = bimg
 	vi.OutTsrs["Yellow"] = yimg
 
 	// for display purposes only:
-	byimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SvLMC)}).(*etensor.Float32)
-	rgimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LvMC)}).(*etensor.Float32)
+	byimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SvLMC)}).(*tensor.Float32)
+	rgimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LvMC)}).(*tensor.Float32)
 	byimg.SetMetaData("grid-fill", "1")
 	rgimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue-Yellow"] = byimg
@@ -206,8 +206,8 @@ func (vi *Vis) DoGFilter(name string, gain, onGain float32) {
 // AggAll aggregates the different DoG components into
 func (vi *Vis) AggAll() {
 	otsr := vi.OutTsr("DoG_" + vi.DoGNames[0] + "_Red-Green")
-	ny := otsr.Dim(1)
-	nx := otsr.Dim(2)
+	ny := otsr.DimSize(1)
+	nx := otsr.DimSize(2)
 	oshp := []int{ny, nx, 2, 2 * len(vi.DoGNames)}
 	vi.OutAll.SetShape(oshp, nil, []string{"Y", "X", "OnOff", "RGBY"})
 	vi.OutAll.SetMetaData("grid-fill", "1")

@@ -9,7 +9,7 @@ package vfilter
 import (
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -21,8 +21,8 @@ import (
 // be contiguous in output from that row up.
 // no bounds checking is done on output so it will just fail if
 // there isn't enough room -- allocate the output size before calling!
-func FeatAgg(srcRows []int, trgStart int, src, out *etensor.Float32) {
-	nang := src.Dim(3)
+func FeatAgg(srcRows []int, trgStart int, src, out *tensor.Float32) {
+	nang := src.DimSize(3)
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang)
 	var wg sync.WaitGroup
@@ -40,9 +40,9 @@ func FeatAgg(srcRows []int, trgStart int, src, out *etensor.Float32) {
 }
 
 // featAggThr is per-thread implementation
-func featAggThr(wg *sync.WaitGroup, fno, nf int, srcRows []int, trgStart int, src, out *etensor.Float32) {
-	ny := src.Dim(0)
-	nx := src.Dim(1)
+func featAggThr(wg *sync.WaitGroup, fno, nf int, srcRows []int, trgStart int, src, out *tensor.Float32) {
+	ny := src.DimSize(0)
+	nx := src.DimSize(1)
 	for fi := 0; fi < nf; fi++ {
 		ang := fno + fi
 		for y := 0; y < ny; y++ {
@@ -63,10 +63,10 @@ func featAggThr(wg *sync.WaitGroup, fno, nf int, srcRows []int, trgStart int, sr
 // inner row-wise dimension maps the outer-most dimension of source tensor.
 // no bounds checking is done on output so it will just fail if
 // there isn't enough room -- allocate the output size before calling!
-func OuterAgg(innerPos, rowOff int, src, out *etensor.Float32) {
-	nout := src.Dim(0)
-	ny := src.Dim(1)
-	nx := src.Dim(2)
+func OuterAgg(innerPos, rowOff int, src, out *tensor.Float32) {
+	nout := src.DimSize(0)
+	ny := src.DimSize(1)
+	nx := src.DimSize(2)
 	for y := 0; y < ny; y++ {
 		for x := 0; x < nx; x++ {
 			for f := 0; f < nout; f++ {

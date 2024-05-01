@@ -12,10 +12,11 @@ package gabor
 
 import (
 	"math"
+	"reflect"
 
 	"cogentcore.org/core/math32"
-	"github.com/emer/etable/v2/etable"
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/table"
 )
 
 // gabor.Filter specifies a gabor filter function,
@@ -91,9 +92,9 @@ func (gf *Filter) SetSize(sz, spc int) {
 	gf.Spacing = spc
 }
 
-// ToTensor renders filters into the given etable etensor.Tensor,
+// ToTensor renders filters into the given table tensor.Tensor,
 // setting dimensions to [angle][Y][X] where Y = X = Size
-func (gf *Filter) ToTensor(tsr *etensor.Float32) {
+func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, nil, []string{"Angles", "Y", "X"})
 
 	ctr := 0.5 * float32(gf.Size-1)
@@ -154,19 +155,19 @@ func (gf *Filter) ToTensor(tsr *etensor.Float32) {
 	}
 }
 
-// ToTable renders filters into the given etable.Table
+// ToTable renders filters into the given table.Table
 // setting a column named Angle to the angle and
 // a column named Gabor to the filter for that angle.
 // This is useful for display and validation purposes.
-func (gf *Filter) ToTable(tab *etable.Table) {
-	tab.SetFromSchema(etable.Schema{
-		{"Angle", etensor.FLOAT32, nil, nil},
-		{"Filter", etensor.FLOAT32, []int{gf.NAngles, gf.Size, gf.Size}, []string{"Angle", "Y", "X"}},
+func (gf *Filter) ToTable(tab *table.Table) {
+	tab.SetFromSchema(table.Schema{
+		{"Angle", reflect.Float32, nil, nil},
+		{"Filter", reflect.Float32, []int{gf.NAngles, gf.Size, gf.Size}, []string{"Angle", "Y", "X"}},
 	}, gf.NAngles)
-	gf.ToTensor(tab.Cols[1].(*etensor.Float32))
+	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := math32.RadToDeg(-float32(ang) * angInc)
-		tab.SetCellFloatIndex(0, ang, float64(-angf))
+		tab.SetFloatIndex(0, ang, float64(-angf))
 	}
 }

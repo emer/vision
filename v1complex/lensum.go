@@ -7,7 +7,7 @@ package v1complex
 import (
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -26,12 +26,12 @@ var (
 // made so (most efficient to re-use same structure).
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
-func LenSum4(act, lsum *etensor.Float32) {
+func LenSum4(act, lsum *tensor.Float32) {
 	if !lsum.Shape.IsEqual(&act.Shape) {
 		lsum.SetShape(act.Shape.Shp, act.Shape.Strd, act.Shape.Nms)
 	}
-	plY := act.Dim(2)
-	nang := act.Dim(3)
+	plY := act.DimSize(2)
+	nang := act.DimSize(3)
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang*plY)
 	var wg sync.WaitGroup
@@ -49,16 +49,16 @@ func LenSum4(act, lsum *etensor.Float32) {
 }
 
 // lenSum4Thr is per-thread implementation
-func lenSum4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum *etensor.Float32) {
+func lenSum4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum *tensor.Float32) {
 
 	acts := act.Values
 	lsums := lsum.Values
 
-	layY := act.Dim(0)
-	layX := act.Dim(1)
+	layY := act.DimSize(0)
+	layX := act.DimSize(1)
 
-	plY := act.Dim(2)
-	nang := act.Dim(3)
+	plY := act.DimSize(2)
+	nang := act.DimSize(3)
 	plN := plY * nang
 
 	norm := float32(1) / 3

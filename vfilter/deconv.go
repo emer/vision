@@ -8,7 +8,7 @@ import (
 	"image"
 	"log"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 )
 
 // Deconv performs reverse convolution of filter -- given output of filter,
@@ -17,22 +17,22 @@ import (
 // applied without any bounds checking -- wrapping etc is all
 // done in the padding process, which is much more efficient.
 // img must be a 2D tensor of image values (convert RGB to grey first).
-// Everything must be organized row major as etensor default.
+// Everything must be organized row major as tensor default.
 // Out shape dims are: Y, X, Polarity (2), Angle
 // where the 2 polarities (on, off) are for positive and and
 // negative filter values, respectively.
-func Deconv(geom *Geom, flt *etensor.Float32, img, out *etensor.Float32, gain float32) {
-	nf := flt.Dim(0)
-	fy := flt.Dim(1)
-	fx := flt.Dim(2)
+func Deconv(geom *Geom, flt *tensor.Float32, img, out *tensor.Float32, gain float32) {
+	nf := flt.DimSize(0)
+	fy := flt.DimSize(1)
+	fx := flt.DimSize(2)
 
 	geom.FiltSz = image.Point{fx, fy}
 	geom.UpdtFilt()
 
-	imgSz := image.Point{img.Dim(1), img.Dim(0)}
+	imgSz := image.Point{img.DimSize(1), img.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{int(geom.Out.Y), int(geom.Out.X), 2, nf}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		log.Printf("Deconv output shape not correct for input\n")
 		return
 	}

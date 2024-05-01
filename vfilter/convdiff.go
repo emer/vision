@@ -8,7 +8,7 @@ import (
 	"image"
 	"sync"
 
-	"github.com/emer/etable/v2/etensor"
+	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 
@@ -20,19 +20,19 @@ import (
 // done in the padding process, which is much more efficient.
 // Computation is parallel in image lines.
 // img must be a 2D tensor of image values (grey or single components).
-// Everything must be organized row major as etensor default.
+// Everything must be organized row major as tensor default.
 // Output has 2 outer dims for positive vs. negative values, inner is Y, X
-func ConvDiff(geom *Geom, fltOn, fltOff *etensor.Float32, imgOn, imgOff, out *etensor.Float32, gain, gainOn float32) {
-	fy := fltOn.Dim(0)
-	fx := fltOn.Dim(1)
+func ConvDiff(geom *Geom, fltOn, fltOff *tensor.Float32, imgOn, imgOff, out *tensor.Float32, gain, gainOn float32) {
+	fy := fltOn.DimSize(0)
+	fx := fltOn.DimSize(1)
 
 	geom.FiltSz = image.Point{fx, fy}
 	geom.UpdtFilt()
 
-	imgSz := image.Point{imgOn.Dim(1), imgOn.Dim(0)}
+	imgSz := image.Point{imgOn.DimSize(1), imgOn.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{2, int(geom.Out.Y), int(geom.Out.X)}
-	if !etensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp) {
 		out.SetShape(oshp, nil, []string{"OnOff", "Y", "X"})
 	}
 	ncpu := nproc.NumCPU()
@@ -52,7 +52,7 @@ func ConvDiff(geom *Geom, fltOn, fltOff *etensor.Float32, imgOn, imgOff, out *et
 }
 
 // convDiffThr is per-thread implementation
-func convDiffThr(wg *sync.WaitGroup, geom *Geom, yst, ny int, fltOn, fltOff *etensor.Float32, imgOn, imgOff, out *etensor.Float32, gain, gainOn float32) {
+func convDiffThr(wg *sync.WaitGroup, geom *Geom, yst, ny int, fltOn, fltOff *tensor.Float32, imgOn, imgOff, out *tensor.Float32, gain, gainOn float32) {
 	ist := geom.Border.Sub(geom.FiltLt)
 	for yi := 0; yi < ny; yi++ {
 		y := yst + yi

@@ -7,7 +7,7 @@ package vxform
 import (
 	"math/rand"
 
-	"github.com/emer/etable/v2/minmax"
+	"cogentcore.org/core/math32/minmax"
 )
 
 // Rand specifies random transforms
