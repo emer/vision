@@ -52,7 +52,7 @@ func MacbethImage(img *tensor.Float32, width, height, bord int) {
 	if img == nil {
 		img = &tensor.Float32{}
 	}
-	img.SetShape([]int{3, sz.Y, sz.X}, nil, []string{"Y", "X", "RGB"})
+	img.SetShape([]int{3, sz.Y, sz.X}, "Y", "X", "RGB")
 
 	ic := evec.Vector2i{}
 	for ic.Y = bvec.Y; ic.Y < upBord.Y; ic.Y++ {

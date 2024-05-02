@@ -51,9 +51,7 @@ func EndStop4(act, lsum, estop *tensor.Float32) {
 	nang := act.DimSize(3)
 
 	oshp := []int{layY, layX, 2 * plY, nang} // 2 = 2 directions
-	if !tensor.EqualInts(oshp, estop.Shp) {
-		estop.SetShape(oshp, nil, []string{"Y", "X", "Dir", "Angle"})
-	}
+	estop.SetShape(oshp, "Y", "X", "Dir", "Angle")
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, plY*nang)
 	var wg sync.WaitGroup

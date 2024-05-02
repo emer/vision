@@ -19,9 +19,7 @@ func MaxReduceFilterY(in, out *tensor.Float32) {
 	nx := in.DimSize(1)
 	nang := in.DimSize(3)
 	oshp := []int{ny, nx, 1, nang}
-	if !tensor.EqualInts(oshp, out.Shp) {
-		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
-	}
+	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang)
 	var wg sync.WaitGroup

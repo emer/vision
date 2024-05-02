@@ -29,7 +29,7 @@ func RGBImgToLMSComps(img image.Image, tsr *tensor.Float32, padWidth int, topZer
 func RGBTensorToLMSComps(tsr *tensor.Float32, rgb *tensor.Float32) {
 	sy := rgb.DimSize(1)
 	sx := rgb.DimSize(2)
-	tsr.SetShape([]int{int(LMSComponentsN), sy, sx}, nil, []string{"LMS", "Y", "X"})
+	tsr.SetShape([]int{int(LMSComponentsN), sy, sx}, "LMS", "Y", "X")
 	for y := 0; y < sy; y++ {
 		for x := 0; x < sx; x++ {
 			r := rgb.Value([]int{0, y, x})

@@ -12,7 +12,6 @@ package gabor
 
 import (
 	"math"
-	"reflect"
 
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
@@ -95,7 +94,7 @@ func (gf *Filter) SetSize(sz, spc int) {
 // ToTensor renders filters into the given table tensor.Tensor,
 // setting dimensions to [angle][Y][X] where Y = X = Size
 func (gf *Filter) ToTensor(tsr *tensor.Float32) {
-	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, nil, []string{"Angles", "Y", "X"})
+	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, "Angles", "Y", "X")
 
 	ctr := 0.5 * float32(gf.Size-1)
 	angInc := math.Pi / float32(gf.NAngles)
@@ -160,10 +159,9 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 // a column named Gabor to the filter for that angle.
 // This is useful for display and validation purposes.
 func (gf *Filter) ToTable(tab *table.Table) {
-	tab.SetFromSchema(table.Schema{
-		{"Angle", reflect.Float32, nil, nil},
-		{"Filter", reflect.Float32, []int{gf.NAngles, gf.Size, gf.Size}, []string{"Angle", "Y", "X"}},
-	}, gf.NAngles)
+	tab.AddFloat32Column("Angle")
+	tab.AddFloat32TensorColumn("Filter", []int{gf.NAngles, gf.Size, gf.Size}, "Angle", "Y", "X")
+	tab.SetNumRows(gf.NAngles)
 	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {

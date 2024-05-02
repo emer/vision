@@ -11,8 +11,6 @@ package dog
 //go:generate core generate -add-types
 
 import (
-	"reflect"
-
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
@@ -90,7 +88,7 @@ func GaussDenSig(x, sig float32) float32 {
 // setting dimensions to [3][Y][X] where Y = X = Size, and
 // first one is On-filter, second is Off-filter, and third is Net On - Off
 func (gf *Filter) ToTensor(tsr *tensor.Float32) {
-	tsr.SetShape([]int{int(FiltersN), gf.Size, gf.Size}, nil, []string{"3", "Y", "X"})
+	tsr.SetShape([]int{int(FiltersN), gf.Size, gf.Size}, "3", "Y", "X")
 
 	ctr := 0.5 * float32(gf.Size-1)
 	radius := float32(gf.Size) * 0.5
@@ -146,10 +144,9 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 // to the filter for that version (on, off, net)
 // This is useful for display and validation purposes.
 func (gf *Filter) ToTable(tab *table.Table) {
-	tab.SetFromSchema(table.Schema{
-		{"Version", tensor.STRING, nil, nil},
-		{"Filter", reflect.Float32, []int{int(FiltersN), gf.Size, gf.Size}, []string{"Version", "Y", "X"}},
-	}, 3)
+	tab.AddStringColumn("Version")
+	tab.AddFloat32TensorColumn("Filter", []int{int(FiltersN), gf.Size, gf.Size}, "Version", "Y", "X")
+	tab.SetNumRows(3)
 	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
 	tab.SetStringIndex(0, int(On), "On")
 	tab.SetStringIndex(0, int(Off), "Off")

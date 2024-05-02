@@ -7,8 +7,6 @@ package kwta
 //go:generate core generate -add-types
 
 import (
-	"log"
-
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/tensor"
 	"github.com/emer/vision/v2/fffb"
@@ -107,14 +105,9 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *tensor.Float32) {
 	inhib := fffb.Inhib{}
 	raws := raw.Values // these are ge
 
-	if !act.Shape.IsEqual(&raw.Shape) {
-		act.SetShape(raw.Shape.Shp, raw.Shape.Strd, raw.Shape.Nms)
-	}
+	act.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
 	if extGi != nil {
-		if !extGi.Shape.IsEqual(&raw.Shape) {
-			log.Println("KWTALayer: extGi is not correct shape, will not be used!")
-			extGi = nil
-		}
+		extGi.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
 	}
 
 	acts := act.Values
@@ -163,14 +156,9 @@ func (kwta *KWTA) KWTAPool(raw, act *tensor.Float32, inhib *fffb.Inhibs, extGi *
 
 	raws := raw.Values // these are ge
 
-	if !act.Shape.IsEqual(&raw.Shape) {
-		act.SetShape(raw.Shape.Shp, raw.Shape.Strd, raw.Shape.Nms)
-	}
+	act.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
 	if extGi != nil {
-		if !extGi.Shape.IsEqual(&raw.Shape) {
-			log.Println("KWTAPool: extGi is not correct shape, will not be used!")
-			extGi = nil
-		}
+		extGi.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
 	}
 
 	acts := act.Values

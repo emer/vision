@@ -32,9 +32,7 @@ func ConvDiff(geom *Geom, fltOn, fltOff *tensor.Float32, imgOn, imgOff, out *ten
 	imgSz := image.Point{imgOn.DimSize(1), imgOn.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{2, int(geom.Out.Y), int(geom.Out.X)}
-	if !tensor.EqualInts(oshp, out.Shp) {
-		out.SetShape(oshp, nil, []string{"OnOff", "Y", "X"})
-	}
+	out.SetShape(oshp, "OnOff", "Y", "X")
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, geom.Out.Y)
 	var wg sync.WaitGroup
@@ -63,7 +61,7 @@ func convDiffThr(wg *sync.WaitGroup, geom *Geom, yst, ny int, fltOn, fltOff *ten
 			fi := 0
 			for fy := 0; fy < geom.FiltSz.Y; fy++ {
 				for fx := 0; fx < geom.FiltSz.X; fx++ {
-					idx := imgOn.Offset([]int{iy + fy, ix + fx})
+					idx := imgOn.Shape().Offset([]int{iy + fy, ix + fx})
 					sumOn += imgOn.Values[idx] * fltOn.Values[fi]
 					sumOff += imgOff.Values[idx] * fltOff.Values[fi]
 					fi++

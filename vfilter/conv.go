@@ -34,9 +34,7 @@ func Conv(geom *Geom, flt *tensor.Float32, img, out *tensor.Float32, gain float3
 	imgSz := image.Point{img.DimSize(1), img.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{int(geom.Out.Y), int(geom.Out.X), 2, nf}
-	if !tensor.EqualInts(oshp, out.Shp) {
-		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
-	}
+	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nf)
 	var wg sync.WaitGroup

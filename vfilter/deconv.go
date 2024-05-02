@@ -32,7 +32,7 @@ func Deconv(geom *Geom, flt *tensor.Float32, img, out *tensor.Float32, gain floa
 	imgSz := image.Point{img.DimSize(1), img.DimSize(0)}
 	geom.SetSize(imgSz)
 	oshp := []int{int(geom.Out.Y), int(geom.Out.X), 2, nf}
-	if !tensor.EqualInts(oshp, out.Shp) {
+	if !tensor.EqualInts(oshp, out.Shp.Sizes) {
 		log.Printf("Deconv output shape not correct for input\n")
 		return
 	}

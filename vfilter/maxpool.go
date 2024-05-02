@@ -31,9 +31,7 @@ func MaxPool(psize, spc image.Point, in, out *tensor.Float32) {
 	}
 
 	oshp := []int{oy, ox, pol, nang}
-	if !tensor.EqualInts(oshp, out.Shp) {
-		out.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
-	}
+	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
 	nf := pol * nang
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nf)

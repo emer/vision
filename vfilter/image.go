@@ -21,7 +21,7 @@ import (
 func RGBToTensor(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
-	tsr.SetShape([]int{3, sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"RGB", "Y", "X"})
+	tsr.SetShape([]int{3, sz.Y + 2*padWidth, sz.X + 2*padWidth}, "RGB", "Y", "X")
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
 			sy := y
@@ -83,7 +83,7 @@ func RGBTensorToImage(img *image.RGBA, tsr *tensor.Float32, padWidth int, topZer
 func RGBToGrey(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
-	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, nil, []string{"Y", "X"})
+	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, "Y", "X")
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
 			sy := y

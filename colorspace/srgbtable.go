@@ -35,7 +35,7 @@ func (so *SRGBToOp) Init() {
 	so.Levels = 64
 	ll := so.Levels
 	llf := float32(ll)
-	so.Table.SetShape([]int{int(LMSComponentsN), so.Levels, so.Levels, so.Levels}, nil, []string{"N", "R", "G", "B"})
+	so.Table.SetShape([]int{int(LMSComponentsN), so.Levels, so.Levels, so.Levels}, "N", "R", "G", "B")
 	// fmt.Printf("table size: %d\n", so.Table.Len())
 	for bi := 0; bi < ll; bi++ {
 		bf := float32(bi) / llf

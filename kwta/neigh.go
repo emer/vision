@@ -46,9 +46,7 @@ func (ni *NeighInhib) Defaults() {
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
 func (ni *NeighInhib) Inhib4(act, extGi *tensor.Float32) {
-	if !extGi.Shape.IsEqual(&act.Shape) {
-		extGi.SetShape(act.Shape.Shp, act.Shape.Strd, act.Shape.Nms)
-	}
+	extGi.SetShape(act.Shp.Sizes, act.Shp.Names...)
 	gis := extGi.Values
 
 	layY := act.DimSize(0)

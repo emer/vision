@@ -209,7 +209,7 @@ func (vi *Vis) AggAll() {
 	ny := otsr.DimSize(1)
 	nx := otsr.DimSize(2)
 	oshp := []int{ny, nx, 2, 2 * len(vi.DoGNames)}
-	vi.OutAll.SetShape(oshp, nil, []string{"Y", "X", "OnOff", "RGBY"})
+	vi.OutAll.SetShape(oshp, "Y", "X", "OnOff", "RGBY")
 	vi.OutAll.SetMetaData("grid-fill", "1")
 	for i, nm := range vi.DoGNames {
 		rgtsr := vi.OutTsr("DoG_" + nm + "_Red-Green")

@@ -236,7 +236,7 @@ func (vi *Vis) V1Simple() {
 func (vi *Vis) ImgFromV1Simple() {
 	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sMaxTsr)
 	vi.V1sUnPoolTsr.SetZeros()
-	vi.ImgFromV1sTsr.SetShape(vi.Img.Tsr.Shape().Sizes[1:], nil, []string{"Y", "X"})
+	vi.ImgFromV1sTsr.SetShape(vi.Img.Tsr.Shape().Sizes[1:], "Y", "X")
 	vi.ImgFromV1sTsr.SetZeros()
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
@@ -265,9 +265,7 @@ func (vi *Vis) V1All() {
 		nrows += 4
 	}
 	oshp := []int{ny, nx, nrows, nang}
-	if !tensor.EqualInts(oshp, vi.V1AllTsr.Shp) {
-		vi.V1AllTsr.SetShape(oshp, nil, []string{"Y", "X", "Polarity", "Angle"})
-	}
+	vi.V1AllTsr.SetShape(oshp, "Y", "X", "Polarity", "Angle")
 	// 1 length-sum
 	vfilter.FeatAgg([]int{0}, 0, &vi.V1cLenSumTsr, &vi.V1AllTsr)
 	// 2 end-stop

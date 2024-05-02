@@ -27,9 +27,7 @@ var (
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
 func LenSum4(act, lsum *tensor.Float32) {
-	if !lsum.Shape.IsEqual(&act.Shape) {
-		lsum.SetShape(act.Shape.Shp, act.Shape.Strd, act.Shape.Nms)
-	}
+	lsum.SetShape(act.Shp.Sizes, act.Shp.Names...)
 	plY := act.DimSize(2)
 	nang := act.DimSize(3)
 	ncpu := nproc.NumCPU()
