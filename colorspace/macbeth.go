@@ -5,8 +5,8 @@
 package colorspace
 
 import (
+	"cogentcore.org/core/math32/vecint"
 	"cogentcore.org/core/tensor"
-	"github.com/emer/emergent/v2/evec"
 )
 
 // MacbethImage sets the Macbeth standard color test image to given tensor
@@ -39,14 +39,14 @@ func MacbethImage(img *tensor.Float32, width, height, bord int) {
 		52, 52, 52,
 	}
 
-	nsq := evec.Vector2i{6, 4}
+	nsq := vecint.Vector2i{6, 4}
 	numsq := nsq.X * nsq.Y
-	sz := evec.Vector2i{width + bord*2 + 8, height + bord*2 + 8}
-	bvec := evec.Vector2i{bord, bord}
-	marg := evec.Vector2i{8, 8}
+	sz := vecint.Vector2i{width + bord*2 + 8, height + bord*2 + 8}
+	bvec := vecint.Vector2i{bord, bord}
+	marg := vecint.Vector2i{8, 8}
 	upBord := sz.Sub(bvec).Sub(marg)
 
-	netSz := evec.Vector2i{width, height}
+	netSz := vecint.Vector2i{width, height}
 	sqSz := netSz.Div(nsq)
 
 	if img == nil {
@@ -54,7 +54,7 @@ func MacbethImage(img *tensor.Float32, width, height, bord int) {
 	}
 	img.SetShape([]int{3, sz.Y, sz.X}, "Y", "X", "RGB")
 
-	ic := evec.Vector2i{}
+	ic := vecint.Vector2i{}
 	for ic.Y = bvec.Y; ic.Y < upBord.Y; ic.Y++ {
 		for ic.X = bvec.X; ic.X < upBord.X; ic.X++ {
 			nc := ic.Sub(bvec)

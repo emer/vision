@@ -3,9 +3,9 @@ module github.com/emer/vision/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.1.3-0.20240503034649-47425f1f7bd5
+	cogentcore.org/core v0.1.3-0.20240503071150-2ec77a094989
 	github.com/anthonynsimon/bild v0.13.0
-	github.com/emer/emergent/v2 v2.0.0-dev0.0.14.0.20240502003845-50257d934bfa
+	github.com/emer/emergent/v2 v2.0.0-dev0.0.14.0.20240503073315-25b2ecd205e2
 )
 
 require (
