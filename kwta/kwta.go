@@ -28,31 +28,31 @@ type KWTA struct {
 	DelActThr float32 `default:"0.005"`
 
 	// layer-level feedforward & feedback inhibition -- applied over entire set of values
-	LayFFFB fffb.Params `view:"inline"`
+	LayFFFB fffb.Params `display:"inline"`
 
 	// pool-level (feature groups) feedforward and feedback inhibition -- applied within inner-most dimensions inside outer 2 dimensions (if Pool method is called)
-	PoolFFFB fffb.Params `view:"inline"`
+	PoolFFFB fffb.Params `display:"inline"`
 
 	// Noisy X/X+1 rate code activation function parameters
-	XX1 nxx1.Params `view:"inline"`
+	XX1 nxx1.Params `display:"inline"`
 
 	// time constant for integrating activation
 	ActTau float32 `default:"3"`
 
 	// maximal conductances levels for channels
-	Gbar Chans `view:"inline"`
+	Gbar Chans `display:"inline"`
 
 	// reversal potentials for each channel
-	Erev Chans `view:"inline"`
+	Erev Chans `display:"inline"`
 
 	// Erev - Act.Thr for each channel -- used in computing GeThrFromG among others
-	ErevSubThr Chans `edit:"-" view:"-"`
+	ErevSubThr Chans `edit:"-" display:"-"`
 
 	// Act.Thr - Erev for each channel -- used in computing GeThrFromG among others
-	ThrSubErev Chans `edit:"-" view:"-" json:"-" xml:"-"`
+	ThrSubErev Chans `edit:"-" display:"-" json:"-" xml:"-"`
 
 	//
-	ActDt float32 `view:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
+	ActDt float32 `display:"-"; json"-" xml"-" desc:"integration rate = 1/ tau"`
 }
 
 func (kwta *KWTA) Defaults() {

@@ -14,8 +14,7 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
-	"cogentcore.org/core/views"
+	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/dog"
@@ -55,25 +54,25 @@ type Vis struct { //types:add
 	ImgSize image.Point
 
 	// DoG filter tensor -- has 3 filters (on, off, net)
-	DoGTsr tensor.Float32 `view:"no-inline"`
+	DoGTsr tensor.Float32 `display:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab table.Table `view:"no-inline"`
+	DoGTab table.Table `display:"no-inline"`
 
 	// current input image
-	Img image.Image `view:"-"`
+	Img image.Image `display:"-"`
 
 	// input image as RGB tensor
-	ImgTsr tensor.Float32 `view:"no-inline"`
+	ImgTsr tensor.Float32 `display:"no-inline"`
 
 	// LMS components + opponents tensor version of image
-	ImgLMS tensor.Float32 `view:"no-inline"`
+	ImgLMS tensor.Float32 `display:"no-inline"`
 
 	// output from 3 dogs with different tuning
-	OutAll tensor.Float32 `view:"no-inline"`
+	OutAll tensor.Float32 `display:"no-inline"`
 
 	// DoG filter output tensors
-	OutTsrs map[string]*tensor.Float32 `view:"no-inline"`
+	OutTsrs map[string]*tensor.Float32 `display:"no-inline"`
 }
 
 func (vi *Vis) Defaults() {
@@ -245,13 +244,10 @@ func (vi *Vis) Filter() error { //types:add
 
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("colordog").SetTitle("Color DoGFiltering")
-
-	views.NewStructView(b, "sv").SetStruct(vi)
-
-	b.AddAppBar(func(tb *core.Toolbar) {
-		views.NewFuncButton(tb, vi.Filter)
+	core.NewForm(b).SetStruct(vi)
+	b.AddAppBar(func(p *core.Plan) {
+		core.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
 	})
-
 	b.RunMainWindow()
 	return b
 }

@@ -15,8 +15,7 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/norm"
 	"cogentcore.org/core/tensor/table"
-	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
-	"cogentcore.org/core/views"
+	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/fffb"
@@ -44,13 +43,13 @@ type V1Img struct { //types:add
 	Size image.Point
 
 	// current input image
-	Img image.Image `view:"-"`
+	Img image.Image `display:"-"`
 
 	// input image as an RGB tensor
-	Tsr tensor.Float32 `view:"no-inline"`
+	Tsr tensor.Float32 `display:"no-inline"`
 
 	// LMS components + opponents tensor version of image
-	LMS tensor.Float32 `view:"no-inline"`
+	LMS tensor.Float32 `display:"no-inline"`
 }
 
 func (vi *V1Img) Defaults() {
@@ -82,16 +81,16 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //types:add
 type V1sOut struct { //types:add
 
 	// V1 simple gabor filter output tensor
-	Tsr tensor.Float32 `view:"no-inline"`
+	Tsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple extra Gi from neighbor inhibition tensor
-	ExtGiTsr tensor.Float32 `view:"no-inline"`
+	ExtGiTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, kwta output tensor
-	KwtaTsr tensor.Float32 `view:"no-inline"`
+	KwtaTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor
-	PoolTsr tensor.Float32 `view:"no-inline"`
+	PoolTsr tensor.Float32 `display:"no-inline"`
 }
 
 // Vis encapsulates specific visual processing pipeline in
@@ -124,43 +123,43 @@ type Vis struct { //types:add
 	V1sKWTA kwta.KWTA
 
 	// V1 simple gabor filter tensor
-	V1sGaborTsr tensor.Float32 `view:"no-inline"`
+	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `view:"no-inline"`
+	V1sGaborTab table.Table `display:"no-inline"`
 
 	// V1 simple gabor filter output, per channel
-	V1s [colorspace.OpponentsN]V1sOut `view:"inline"`
+	V1s [colorspace.OpponentsN]V1sOut `display:"inline"`
 
 	// max over V1 simple gabor filters output tensor
-	V1sMaxTsr tensor.Float32 `view:"no-inline"`
+	V1sMaxTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of Kwta tensor
-	V1sPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, un-max-pooled 2x2 of Pool tensor
-	V1sUnPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sUnPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// input image reconstructed from V1s tensor
-	ImgFromV1sTsr tensor.Float32 `view:"no-inline"`
+	ImgFromV1sTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, angle-only features tensor
-	V1sAngOnlyTsr tensor.Float32 `view:"no-inline"`
+	V1sAngOnlyTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor
-	V1sAngPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sAngPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 complex length sum filter output tensor
-	V1cLenSumTsr tensor.Float32 `view:"no-inline"`
+	V1cLenSumTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 complex end stop filter output tensor
-	V1cEndStopTsr tensor.Float32 `view:"no-inline"`
+	V1cEndStopTsr tensor.Float32 `display:"no-inline"`
 
 	// Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total (9 if SepColor)
-	V1AllTsr tensor.Float32 `view:"no-inline"`
+	V1AllTsr tensor.Float32 `display:"no-inline"`
 
 	// inhibition values for V1s KWTA
-	V1sInhibs fffb.Inhibs `view:"no-inline"`
+	V1sInhibs fffb.Inhibs `display:"no-inline"`
 }
 
 func (vi *Vis) Defaults() {
@@ -303,13 +302,10 @@ func (vi *Vis) Filter() error { //types:add
 
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
-
-	views.NewStructView(b, "sv").SetStruct(vi)
-
-	b.AddAppBar(func(tb *core.Toolbar) {
-		views.NewFuncButton(tb, vi.Filter)
+	core.NewForm(b).SetStruct(vi)
+	b.AddAppBar(func(p *core.Plan) {
+		core.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
 	})
-
 	b.RunMainWindow()
 	return b
 }

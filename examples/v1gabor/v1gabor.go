@@ -15,8 +15,7 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/norm"
 	"cogentcore.org/core/tensor/table"
-	_ "cogentcore.org/core/tensor/tensorview" // include to get gui views
-	"cogentcore.org/core/views"
+	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/fffb"
 	"github.com/emer/vision/v2/gabor"
@@ -55,52 +54,52 @@ type Vis struct { //types:add
 	ImgSize image.Point
 
 	// V1 simple gabor filter tensor
-	V1sGaborTsr tensor.Float32 `view:"no-inline"`
+	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `view:"no-inline"`
+	V1sGaborTab table.Table `display:"no-inline"`
 
 	// current input image
-	Img image.Image `view:"-"`
+	Img image.Image `display:"-"`
 
 	// input image as tensor
-	ImgTsr tensor.Float32 `view:"no-inline"`
+	ImgTsr tensor.Float32 `display:"no-inline"`
 
 	// input image reconstructed from V1s tensor
-	ImgFromV1sTsr tensor.Float32 `view:"no-inline"`
+	ImgFromV1sTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output tensor
-	V1sTsr tensor.Float32 `view:"no-inline"`
+	V1sTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple extra Gi from neighbor inhibition tensor
-	V1sExtGiTsr tensor.Float32 `view:"no-inline"`
+	V1sExtGiTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, kwta output tensor
-	V1sKwtaTsr tensor.Float32 `view:"no-inline"`
+	V1sKwtaTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of V1sKwta tensor
-	V1sPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, un-max-pooled 2x2 of V1sPool tensor
-	V1sUnPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sUnPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, angle-only features tensor
-	V1sAngOnlyTsr tensor.Float32 `view:"no-inline"`
+	V1sAngOnlyTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter output, max-pooled 2x2 of AngOnly tensor
-	V1sAngPoolTsr tensor.Float32 `view:"no-inline"`
+	V1sAngPoolTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 complex length sum filter output tensor
-	V1cLenSumTsr tensor.Float32 `view:"no-inline"`
+	V1cLenSumTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 complex end stop filter output tensor
-	V1cEndStopTsr tensor.Float32 `view:"no-inline"`
+	V1cEndStopTsr tensor.Float32 `display:"no-inline"`
 
 	// Combined V1 output tensor with V1s simple as first two rows, then length sum, then end stops = 5 rows total
-	V1AllTsr tensor.Float32 `view:"no-inline"`
+	V1AllTsr tensor.Float32 `display:"no-inline"`
 
 	// inhibition values for V1s KWTA
-	V1sInhibs fffb.Inhibs `view:"no-inline"`
+	V1sInhibs fffb.Inhibs `display:"no-inline"`
 }
 
 func (vi *Vis) Defaults() {
@@ -219,13 +218,10 @@ func (vi *Vis) Filter() error { //types:add
 
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("v1gabor").SetTitle("V1 Gabor Filtering")
-
-	views.NewStructView(b, "sv").SetStruct(vi)
-
-	b.AddAppBar(func(tb *core.Toolbar) {
-		views.NewFuncButton(tb, vi.Filter)
+	core.NewForm(b).SetStruct(vi)
+	b.AddAppBar(func(p *core.Plan) {
+		core.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
 	})
-
 	b.RunMainWindow()
 	return b
 }
