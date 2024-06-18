@@ -3,7 +3,7 @@ module github.com/emer/vision/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.1.5-0.20240614235343-22f64ec2583a
+	cogentcore.org/core v0.1.5-0.20240618090428-8a24e602ee2b
 	github.com/anthonynsimon/bild v0.13.0
 	github.com/emer/emergent/v2 v2.0.0-dev0.0.14.0.20240614233842-96b5da775420
 )
