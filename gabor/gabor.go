@@ -74,7 +74,7 @@ func (gf *Filter) Defaults() {
 func (gf *Filter) Update() {
 }
 
-func (gf *Filter) ShouldShow(field string) bool {
+func (gf *Filter) ShouldDisplay(field string) bool {
 	switch field {
 	case "On":
 		return true
