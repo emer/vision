@@ -16,6 +16,7 @@ import (
 	"cogentcore.org/core/tensor/stats/norm"
 	"cogentcore.org/core/tensor/table"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
+	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/colorspace"
 	"github.com/emer/vision/v2/fffb"
@@ -303,8 +304,8 @@ func (vi *Vis) Filter() error { //types:add
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
 	core.NewForm(b).SetStruct(vi)
-	b.AddAppBar(func(p *core.Plan) {
-		core.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+	b.AddAppBar(func(p *tree.Plan) {
+		tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
 	})
 	b.RunMainWindow()
 	return b
