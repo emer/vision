@@ -3,9 +3,9 @@ module github.com/emer/vision/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.1.5-0.20240618090428-8a24e602ee2b
+	cogentcore.org/core v0.2.3
 	github.com/anthonynsimon/bild v0.13.0
-	github.com/emer/emergent/v2 v2.0.0-dev0.0.14.0.20240614233842-96b5da775420
+	github.com/emer/emergent/v2 v2.0.0-dev0.1.0
 )
 
 require (
@@ -27,9 +27,9 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.2-0.20240227203013-2b69615b5d55 // indirect
 	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848 // indirect
-	golang.org/x/image v0.15.0 // indirect
-	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/image v0.18.0 // indirect
+	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	gonum.org/v1/gonum v0.15.0 // indirect
 )
