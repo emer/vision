@@ -48,8 +48,8 @@ func featAggThr(wg *sync.WaitGroup, fno, nf int, srcRows []int, trgStart int, sr
 		for y := 0; y < ny; y++ {
 			for x := 0; x < nx; x++ {
 				for si, sr := range srcRows {
-					sv := src.Value([]int{y, x, sr, ang})
-					out.Set([]int{y, x, trgStart + si, ang}, sv)
+					sv := src.Value(y, x, sr, ang)
+					out.Set(sv, y, x, trgStart+si, ang)
 				}
 			}
 		}
@@ -70,8 +70,8 @@ func OuterAgg(innerPos, rowOff int, src, out *tensor.Float32) {
 	for y := 0; y < ny; y++ {
 		for x := 0; x < nx; x++ {
 			for f := 0; f < nout; f++ {
-				sv := src.Value([]int{f, y, x})
-				out.Set([]int{y, x, rowOff + f, innerPos}, sv)
+				sv := src.Value(f, y, x)
+				out.Set(sv, y, x, rowOff+f, innerPos)
 			}
 		}
 	}

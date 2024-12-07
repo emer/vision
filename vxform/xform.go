@@ -20,16 +20,16 @@ import (
 type XForm struct {
 
 	// current, prv X-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)
-	TransX env.CurPrvF32
+	TransX env.CurPrev[float32]
 
 	// current, prv Y-axis (horizontal) translation value, as proportion of image half-size (i.e., 1 = move from center to edge)
-	TransY env.CurPrvF32
+	TransY env.CurPrev[float32]
 
 	// current, prv scale value
-	Scale env.CurPrvF32
+	Scale env.CurPrev[float32]
 
 	// current, prv rotation value, in degrees
-	Rot env.CurPrvF32
+	Rot env.CurPrev[float32]
 }
 
 // Set updates current values

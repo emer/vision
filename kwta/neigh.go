@@ -46,7 +46,7 @@ func (ni *NeighInhib) Defaults() {
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
 func (ni *NeighInhib) Inhib4(act, extGi *tensor.Float32) {
-	extGi.SetShape(act.Shp.Sizes, act.Shp.Names...)
+	extGi.SetShapeSizes(act.Shape().Sizes...)
 	gis := extGi.Values
 
 	layY := act.DimSize(0)
@@ -68,12 +68,12 @@ func (ni *NeighInhib) Inhib4(act, extGi *tensor.Float32) {
 					npX := lx + Neigh4X[ang]
 					npY := ly + Neigh4Y[ang]
 					if npX >= 0 && npX < layX && npY >= 0 && npY < layY {
-						gi = math32.Max(gi, ni.Gi*act.Value([]int{npY, npX, py, ang}))
+						gi = math32.Max(gi, ni.Gi*act.Value(npY, npX, py, ang))
 					}
 					nnX := lx - Neigh4X[ang]
 					nnY := ly - Neigh4Y[ang]
 					if nnX >= 0 && nnX < layX && nnY >= 0 && nnY < layY {
-						gi = math32.Max(gi, ni.Gi*act.Value([]int{nnY, nnX, py, ang}))
+						gi = math32.Max(gi, ni.Gi*act.Value(nnY, nnX, py, ang))
 					}
 					gis[idx] = gi
 					ui++

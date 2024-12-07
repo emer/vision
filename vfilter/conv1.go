@@ -30,8 +30,7 @@ func Conv1(geom *Geom, flt *tensor.Float32, img, out *tensor.Float32, gain float
 
 	imgSz := image.Point{img.DimSize(1), img.DimSize(0)}
 	geom.SetSize(imgSz)
-	oshp := []int{2, int(geom.Out.Y), int(geom.Out.X)}
-	out.SetShape(oshp, "OnOff", "Y", "X")
+	out.SetShapeSizes(2, int(geom.Out.Y), int(geom.Out.X))
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, geom.Out.Y)
 	var wg sync.WaitGroup
@@ -60,7 +59,7 @@ func conv1Thr(wg *sync.WaitGroup, geom *Geom, yst, ny int, flt *tensor.Float32, 
 			fi := 0
 			for fy := 0; fy < geom.FiltSz.Y; fy++ {
 				for fx := 0; fx < geom.FiltSz.X; fx++ {
-					iv := img.Value([]int{iy + fy, ix + fx})
+					iv := img.Value(iy+fy, ix+fx)
 					fv := flt.Values[fi]
 					sum += iv * fv
 					fi++
@@ -68,11 +67,11 @@ func conv1Thr(wg *sync.WaitGroup, geom *Geom, yst, ny int, flt *tensor.Float32, 
 			}
 			sum *= gain
 			if sum > 0 {
-				out.Set([]int{0, y, x}, sum)
-				out.Set([]int{1, y, x}, float32(0))
+				out.Set(sum, 0, y, x)
+				out.Set(float32(0), 1, y, x)
 			} else {
-				out.Set([]int{0, y, x}, float32(0))
-				out.Set([]int{1, y, x}, -sum)
+				out.Set(float32(0), 0, y, x)
+				out.Set(-sum, 1, y, x)
 			}
 		}
 	}

@@ -18,8 +18,7 @@ func MaxReduceFilterY(in, out *tensor.Float32) {
 	ny := in.DimSize(0)
 	nx := in.DimSize(1)
 	nang := in.DimSize(3)
-	oshp := []int{ny, nx, 1, nang}
-	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
+	out.SetShapeSizes(ny, nx, 1, nang)
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nang)
 	var wg sync.WaitGroup
@@ -45,14 +44,14 @@ func maxReduceFilterYThr(wg *sync.WaitGroup, fno, nf int, in, out *tensor.Float3
 		ang := fno + fi
 		for y := 0; y < ny; y++ {
 			for x := 0; x < nx; x++ {
-				max := float32(0)
+				mx := float32(0)
 				for fy := 0; fy < np; fy++ {
-					iv := in.Value([]int{y, x, fy, ang})
-					if iv > max {
-						max = iv
+					iv := in.Value(y, x, fy, ang)
+					if iv > mx {
+						mx = iv
 					}
 				}
-				out.Set([]int{y, x, 0, ang}, max)
+				out.Set(mx, y, x, 0, ang)
 			}
 		}
 	}

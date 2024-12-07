@@ -27,7 +27,7 @@ var (
 // Act must be a 4D tensor with features as inner 2D.
 // 4 version ONLY works with 4 angles (inner-most feature dimension)
 func LenSum4(act, lsum *tensor.Float32) {
-	lsum.SetShape(act.Shp.Sizes, act.Shp.Names...)
+	lsum.SetShapeSizes(act.Shape().Sizes...)
 	plY := act.DimSize(2)
 	nang := act.DimSize(3)
 	ncpu := nproc.NumCPU()
@@ -76,13 +76,13 @@ func lenSum4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum *tensor.Float32) {
 				lpX := lx + Line4X[ang]
 				lpY := ly + Line4Y[ang]
 				if lpX >= 0 && lpX < layX && lpY >= 0 && lpY < layY {
-					lp = act.Value([]int{lpY, lpX, py, ang})
+					lp = act.Value(lpY, lpX, py, ang)
 				}
 				ln := float32(0)
 				lnX := lx - Line4X[ang]
 				lnY := ly - Line4Y[ang]
 				if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
-					ln = act.Value([]int{lnY, lnX, py, ang})
+					ln = act.Value(lnY, lnX, py, ang)
 				}
 				ls := norm * (ctr + lp + ln)
 				lsums[idx] = ls

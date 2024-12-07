@@ -105,9 +105,9 @@ func (kwta *KWTA) KWTALayer(raw, act, extGi *tensor.Float32) {
 	inhib := fffb.Inhib{}
 	raws := raw.Values // these are ge
 
-	act.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
+	act.SetShapeSizes(raw.Shape().Sizes...)
 	if extGi != nil {
-		extGi.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
+		extGi.SetShapeSizes(raw.Shape().Sizes...)
 	}
 
 	acts := act.Values
@@ -156,9 +156,9 @@ func (kwta *KWTA) KWTAPool(raw, act *tensor.Float32, inhib *fffb.Inhibs, extGi *
 
 	raws := raw.Values // these are ge
 
-	act.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
+	act.SetShapeSizes(raw.Shape().Sizes...)
 	if extGi != nil {
-		extGi.SetShape(raw.Shp.Sizes, raw.Shp.Names...)
+		extGi.SetShapeSizes(raw.Shape().Sizes...)
 	}
 
 	acts := act.Values

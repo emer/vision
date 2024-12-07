@@ -35,8 +35,7 @@ func UnPool(psize, spc image.Point, in, out *tensor.Float32, rnd bool) {
 		ox--
 	}
 
-	oshp := []int{oy, ox, pol, nang}
-	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
+	out.SetShapeSizes(oy, ox, pol, nang)
 	nf := pol * nang
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nf)
@@ -68,16 +67,16 @@ func unPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out 
 			iy := y * spc.Y
 			for x := 0; x < nx; x++ {
 				ix := x * spc.X
-				max := out.Value([]int{y, x, pol, ang})
+				mx := out.Value(y, x, pol, ang)
 				if rnd {
 					ptrg := rand.Intn(psz)
 					pdx := 0
 					for py := 0; py < psize.Y; py++ {
 						for px := 0; px < psize.X; px++ {
 							if pdx == ptrg {
-								in.Set([]int{iy + py, ix + px, pol, ang}, max)
+								in.Set(mx, iy+py, ix+px, pol, ang)
 							} else {
-								in.Set([]int{iy + py, ix + px, pol, ang}, 0)
+								in.Set(0, iy+py, ix+px, pol, ang)
 							}
 							pdx++
 						}
@@ -85,7 +84,7 @@ func unPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out 
 				} else {
 					for py := 0; py < psize.Y; py++ {
 						for px := 0; px < psize.X; px++ {
-							in.Set([]int{iy + py, ix + px, pol, ang}, max)
+							in.Set(mx, iy+py, ix+px, pol, ang)
 						}
 					}
 				}

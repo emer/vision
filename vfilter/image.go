@@ -21,7 +21,7 @@ import (
 func RGBToTensor(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
-	tsr.SetShape([]int{3, sz.Y + 2*padWidth, sz.X + 2*padWidth}, "RGB", "Y", "X")
+	tsr.SetShapeSizes(3, sz.Y+2*padWidth, sz.X+2*padWidth)
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
 			sy := y
@@ -30,9 +30,9 @@ func RGBToTensor(img image.Image, tsr *tensor.Float32, padWidth int, topZero boo
 			}
 			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
 			r, g, b, _ := colors.ToFloat32(cv)
-			tsr.Set([]int{0, y + padWidth, x + padWidth}, r)
-			tsr.Set([]int{1, y + padWidth, x + padWidth}, g)
-			tsr.Set([]int{2, y + padWidth, x + padWidth}, b)
+			tsr.Set(r, 0, y+padWidth, x+padWidth)
+			tsr.Set(g, 1, y+padWidth, x+padWidth)
+			tsr.Set(b, 2, y+padWidth, x+padWidth)
 		}
 	}
 }
@@ -62,9 +62,9 @@ func RGBTensorToImage(img *image.RGBA, tsr *tensor.Float32, padWidth int, topZer
 			if !topZero {
 				sy = (sz.Y - 1) - y
 			}
-			r := tsr.Value([]int{0, y + padWidth, x + padWidth})
-			g := tsr.Value([]int{1, y + padWidth, x + padWidth})
-			b := tsr.Value([]int{2, y + padWidth, x + padWidth})
+			r := tsr.Value(0, y+padWidth, x+padWidth)
+			g := tsr.Value(1, y+padWidth, x+padWidth)
+			b := tsr.Value(2, y+padWidth, x+padWidth)
 			ri := uint8(r * 255)
 			gi := uint8(g * 255)
 			bi := uint8(b * 255)
@@ -83,7 +83,7 @@ func RGBTensorToImage(img *image.RGBA, tsr *tensor.Float32, padWidth int, topZer
 func RGBToGrey(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool) {
 	bd := img.Bounds()
 	sz := bd.Size()
-	tsr.SetShape([]int{sz.Y + 2*padWidth, sz.X + 2*padWidth}, "Y", "X")
+	tsr.SetShapeSizes(sz.Y+2*padWidth, sz.X+2*padWidth)
 	for y := 0; y < sz.Y; y++ {
 		for x := 0; x < sz.X; x++ {
 			sy := y
@@ -93,7 +93,7 @@ func RGBToGrey(img image.Image, tsr *tensor.Float32, padWidth int, topZero bool)
 			cv := img.At(bd.Min.X+x, bd.Min.Y+sy)
 			r, g, b, _ := colors.ToFloat32(cv)
 			gv := (r + g + b) / 3
-			tsr.Set([]int{y + padWidth, x + padWidth}, gv)
+			tsr.Set(gv, y+padWidth, x+padWidth)
 		}
 	}
 }
@@ -122,7 +122,7 @@ func GreyTensorToImage(img *image.Gray, tsr *tensor.Float32, padWidth int, topZe
 			if !topZero {
 				sy = (sz.Y - 1) - y
 			}
-			cv := tsr.Value([]int{y + padWidth, x + padWidth})
+			cv := tsr.Value(y+padWidth, x+padWidth)
 			iv := uint8(cv * 255)
 			img.Set(x, sy, color.Gray{iv})
 		}
@@ -146,12 +146,12 @@ func WrapPad(tsr *tensor.Float32, padWidth int) {
 			sy = padWidth + (y - usz.Y)
 		}
 		for x := 0; x < padWidth; x++ {
-			wv := tsr.Value([]int{sy, usz.X - (padWidth - x)})
-			tsr.Set([]int{y, x}, wv)
+			wv := tsr.Value(sy, usz.X-(padWidth-x))
+			tsr.Set(wv, y, x)
 		}
 		for x := usz.X; x < sz.X; x++ {
-			wv := tsr.Value([]int{sy, padWidth + (x - usz.X)})
-			tsr.Set([]int{y, x}, wv)
+			wv := tsr.Value(sy, padWidth+(x-usz.X))
+			tsr.Set(wv, y, x)
 		}
 	}
 	for x := 0; x < sz.X; x++ {
@@ -162,12 +162,12 @@ func WrapPad(tsr *tensor.Float32, padWidth int) {
 			sx = padWidth + (x - usz.X)
 		}
 		for y := 0; y < padWidth; y++ {
-			wv := tsr.Value([]int{usz.Y - (padWidth - y), sx})
-			tsr.Set([]int{y, x}, wv)
+			wv := tsr.Value(usz.Y-(padWidth-y), sx)
+			tsr.Set(wv, y, x)
 		}
 		for y := usz.Y; y < sz.Y; y++ {
-			wv := tsr.Value([]int{padWidth + (y - usz.Y), sx})
-			tsr.Set([]int{y, x}, wv)
+			wv := tsr.Value(padWidth+(y-usz.Y), sx)
+			tsr.Set(wv, y, x)
 		}
 	}
 }
@@ -179,7 +179,7 @@ func WrapPad(tsr *tensor.Float32, padWidth int) {
 func WrapPadRGB(tsr *tensor.Float32, padWidth int) {
 	nc := tsr.DimSize(0)
 	for i := 0; i < nc; i++ {
-		simg := tsr.SubSpace([]int{i}).(*tensor.Float32)
+		simg := tsr.SubSpace(i).(*tensor.Float32)
 		WrapPad(simg, padWidth)
 	}
 }
@@ -195,14 +195,14 @@ func EdgeAvg(tsr *tensor.Float32, padWidth int) float32 {
 	n := 0
 	for y := 0; y < esz.Y; y++ {
 		oy := y + padWidth
-		avg += tsr.Value([]int{oy, padWidth})
-		avg += tsr.Value([]int{oy, padWidth + esz.X - 1})
+		avg += tsr.Value(oy, padWidth)
+		avg += tsr.Value(oy, padWidth+esz.X-1)
 	}
 	n += 2 * esz.X
 	for x := 0; x < esz.X; x++ {
 		ox := x + padWidth
-		avg += tsr.Value([]int{padWidth, ox})
-		avg += tsr.Value([]int{padWidth + esz.Y - 1, ox})
+		avg += tsr.Value(padWidth, ox)
+		avg += tsr.Value(padWidth+esz.Y-1, ox)
 	}
 	n += 2 * esz.X
 	return avg / float32(n)
@@ -220,14 +220,14 @@ func FadePad(tsr *tensor.Float32, padWidth int) {
 		var lv, rv float32
 		switch {
 		case y < padWidth:
-			lv = tsr.Value([]int{padWidth, padWidth})
-			rv = tsr.Value([]int{padWidth, usz.X - 1})
+			lv = tsr.Value(padWidth, padWidth)
+			rv = tsr.Value(padWidth, usz.X-1)
 		case y >= usz.Y:
-			lv = tsr.Value([]int{usz.Y - 1, padWidth})
-			rv = tsr.Value([]int{usz.Y - 1, usz.X - 1})
+			lv = tsr.Value(usz.Y-1, padWidth)
+			rv = tsr.Value(usz.Y-1, usz.X-1)
 		default:
-			lv = tsr.Value([]int{y, padWidth})
-			rv = tsr.Value([]int{y, usz.X - 1})
+			lv = tsr.Value(y, padWidth)
+			rv = tsr.Value(y, usz.X-1)
 		}
 		for x := 0; x < padWidth; x++ {
 			if y < x || y >= sz.Y-x {
@@ -237,22 +237,22 @@ func FadePad(tsr *tensor.Float32, padWidth int) {
 			pavg := (1 - p) * avg
 			lpv := p*lv + pavg
 			rpv := p*rv + pavg
-			tsr.Set([]int{y, x}, lpv)
-			tsr.Set([]int{y, sz.X - 1 - x}, rpv)
+			tsr.Set(lpv, y, x)
+			tsr.Set(rpv, y, sz.X-1-x)
 		}
 	}
 	for x := 0; x < sz.X; x++ {
 		var tv, bv float32
 		switch {
 		case x < padWidth:
-			tv = tsr.Value([]int{padWidth, padWidth})
-			bv = tsr.Value([]int{usz.Y - 1, padWidth})
+			tv = tsr.Value(padWidth, padWidth)
+			bv = tsr.Value(usz.Y-1, padWidth)
 		case x >= usz.X:
-			tv = tsr.Value([]int{padWidth, usz.X - 1})
-			bv = tsr.Value([]int{usz.Y - 1, usz.X - 1})
+			tv = tsr.Value(padWidth, usz.X-1)
+			bv = tsr.Value(usz.Y-1, usz.X-1)
 		default:
-			tv = tsr.Value([]int{padWidth, x})
-			bv = tsr.Value([]int{usz.X - 1, x})
+			tv = tsr.Value(padWidth, x)
+			bv = tsr.Value(usz.X-1, x)
 		}
 		for y := 0; y < padWidth; y++ {
 			if x < y || x >= sz.X-y {
@@ -262,8 +262,8 @@ func FadePad(tsr *tensor.Float32, padWidth int) {
 			pavg := (1 - p) * avg
 			tpv := p*tv + pavg
 			bpv := p*bv + pavg
-			tsr.Set([]int{y, x}, tpv)
-			tsr.Set([]int{sz.Y - 1 - y, x}, bpv)
+			tsr.Set(tpv, y, x)
+			tsr.Set(bpv, sz.Y-1-y, x)
 		}
 	}
 }
@@ -274,7 +274,7 @@ func FadePad(tsr *tensor.Float32, padWidth int) {
 func FadePadRGB(tsr *tensor.Float32, padWidth int) {
 	nc := tsr.DimSize(0)
 	for i := 0; i < nc; i++ {
-		simg := tsr.SubSpace([]int{i}).(*tensor.Float32)
+		simg := tsr.SubSpace(i).(*tensor.Float32)
 		FadePad(simg, padWidth)
 	}
 }

@@ -94,7 +94,7 @@ func (gf *Filter) SetSize(sz, spc int) {
 // ToTensor renders filters into the given table tensor.Tensor,
 // setting dimensions to [angle][Y][X] where Y = X = Size
 func (gf *Filter) ToTensor(tsr *tensor.Float32) {
-	tsr.SetShape([]int{gf.NAngles, gf.Size, gf.Size}, "Angles", "Y", "X")
+	tsr.SetShapeSizes(gf.NAngles, gf.Size, gf.Size)
 
 	ctr := 0.5 * float32(gf.Size-1)
 	angInc := math.Pi / float32(gf.NAngles)
@@ -134,7 +134,7 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 						negSum += -val
 					}
 				}
-				tsr.Set([]int{ang, y, x}, val)
+				tsr.Set(val, ang, y, x)
 			}
 		}
 		// renorm each half
@@ -142,13 +142,13 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 		negNorm := float32(1) / negSum
 		for x := 0; x < gf.Size; x++ {
 			for y := 0; y < gf.Size; y++ {
-				val := tsr.Value([]int{ang, y, x})
+				val := tsr.Value(ang, y, x)
 				if val > 0 {
 					val *= posNorm
 				} else if val < 0 {
 					val *= negNorm
 				}
-				tsr.Set([]int{ang, y, x}, val)
+				tsr.Set(val, ang, y, x)
 			}
 		}
 	}
@@ -160,12 +160,12 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 // This is useful for display and validation purposes.
 func (gf *Filter) ToTable(tab *table.Table) {
 	tab.AddFloat32Column("Angle")
-	tab.AddFloat32TensorColumn("Filter", []int{gf.NAngles, gf.Size, gf.Size}, "Angle", "Y", "X")
+	tab.AddFloat32Column("Filter", gf.NAngles, gf.Size, gf.Size)
 	tab.SetNumRows(gf.NAngles)
-	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
+	gf.ToTensor(tab.Columns.Values[1].(*tensor.Float32))
 	angInc := math.Pi / float32(gf.NAngles)
 	for ang := 0; ang < gf.NAngles; ang++ {
 		angf := math32.RadToDeg(-float32(ang) * angInc)
-		tab.SetFloatIndex(0, ang, float64(-angf))
+		tab.ColumnByIndex(0).SetFloat1D(float64(-angf), ang)
 	}
 }

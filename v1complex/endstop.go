@@ -50,8 +50,7 @@ func EndStop4(act, lsum, estop *tensor.Float32) {
 	plY := act.DimSize(2)
 	nang := act.DimSize(3)
 
-	oshp := []int{layY, layX, 2 * plY, nang} // 2 = 2 directions
-	estop.SetShape(oshp, "Y", "X", "Dir", "Angle")
+	estop.SetShapeSizes(layY, layX, 2*plY, nang) // 2 = 2 directions
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, plY*nang)
 	var wg sync.WaitGroup
@@ -92,7 +91,7 @@ func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *tensor.Float
 					lnX := lx - dsign*Line4X[ang]
 					lnY := ly - dsign*Line4Y[ang]
 					if lnX >= 0 && lnX < layX && lnY >= 0 && lnY < layY {
-						ls = lsum.Value([]int{lnY, lnX, py, ang})
+						ls = lsum.Value(lnY, lnX, py, ang)
 					}
 
 					offMax := float32(0)
@@ -100,7 +99,7 @@ func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *tensor.Float
 						ofX := lx + dsign*EndStopOff4X[ang*3+oi]
 						ofY := ly + dsign*EndStopOff4Y[ang*3+oi]
 						if ofX >= 0 && ofX < layX && ofY >= 0 && ofY < layY {
-							off := act.Value([]int{ofY, ofX, py, ang})
+							off := act.Value(ofY, ofX, py, ang)
 							offMax = math32.Max(offMax, off)
 						}
 					}
@@ -108,7 +107,7 @@ func endStop4Thr(wg *sync.WaitGroup, fno, nf int, act, lsum, estop *tensor.Float
 					if es < 0.2 {     // note: builtin threshold
 						es = 0
 					}
-					estop.Set([]int{ly, lx, py*2 + dir, ang}, es)
+					estop.Set(es, ly, lx, py*2+dir, ang)
 				}
 			}
 		}

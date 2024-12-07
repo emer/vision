@@ -30,8 +30,7 @@ func MaxPool(psize, spc image.Point, in, out *tensor.Float32) {
 		ox--
 	}
 
-	oshp := []int{oy, ox, pol, nang}
-	out.SetShape(oshp, "Y", "X", "Polarity", "Angle")
+	out.SetShapeSizes(oy, ox, pol, nang)
 	nf := pol * nang
 	ncpu := nproc.NumCPU()
 	nthrs, nper, rmdr := nproc.ThreadNs(ncpu, nf)
@@ -62,16 +61,16 @@ func maxPoolThr(wg *sync.WaitGroup, fno, nf int, psize, spc image.Point, in, out
 			iy := y * spc.Y
 			for x := 0; x < nx; x++ {
 				ix := x * spc.X
-				max := float32(0)
+				mx := float32(0)
 				for py := 0; py < psize.Y; py++ {
 					for px := 0; px < psize.X; px++ {
-						iv := in.Value([]int{iy + py, ix + px, pol, ang})
-						if iv > max {
-							max = iv
+						iv := in.Value(iy+py, ix+px, pol, ang)
+						if iv > mx {
+							mx = iv
 						}
 					}
 				}
-				out.Set([]int{y, x, pol, ang}, max)
+				out.Set(mx, y, x, pol, ang)
 			}
 		}
 	}
