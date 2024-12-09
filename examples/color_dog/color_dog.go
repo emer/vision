@@ -58,7 +58,7 @@ type Vis struct { //types:add
 	DoGTsr tensor.Float32 `display:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab table.Table `display:"-"` // `display:"no-inline"`
+	DoGTab table.Table `display:"no-inline"`
 
 	// current input image
 	Img image.Image `display:"-"`

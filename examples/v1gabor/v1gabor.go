@@ -58,7 +58,7 @@ type Vis struct { //types:add
 	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `display:"-"` // `display:"no-inline"`
+	V1sGaborTab table.Table `display:"no-inline"`
 
 	// current input image
 	Img image.Image `display:"-"`

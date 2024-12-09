@@ -127,7 +127,7 @@ type Vis struct { //types:add
 	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `display:"-"` // `display:"no-inline"`
+	V1sGaborTab table.Table `display:"no-inline"`
 
 	// V1 simple gabor filter output, per channel
 	V1s [colorspace.OpponentsN]V1sOut `display:"no-inline"`
