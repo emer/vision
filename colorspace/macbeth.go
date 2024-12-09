@@ -52,7 +52,7 @@ func MacbethImage(img *tensor.Float32, width, height, bord int) {
 	if img == nil {
 		img = &tensor.Float32{}
 	}
-	img.SetShape([]int{3, sz.Y, sz.X}, "Y", "X", "RGB")
+	img.SetShapeSizes(3, sz.Y, sz.X)
 
 	ic := vecint.Vector2i{}
 	for ic.Y = bvec.Y; ic.Y < upBord.Y; ic.Y++ {
@@ -68,9 +68,9 @@ func MacbethImage(img *tensor.Float32, width, height, bord int) {
 					g := float32(sRGBvals[clri*3+1]) / 255
 					b := float32(sRGBvals[clri*3+2]) / 255
 
-					img.Set([]int{0, ic.Y, ic.X}, r)
-					img.Set([]int{1, ic.Y, ic.X}, g)
-					img.Set([]int{2, ic.Y, ic.X}, b)
+					img.Set(r, 0, ic.Y, ic.X)
+					img.Set(g, 1, ic.Y, ic.X)
+					img.Set(b, 2, ic.Y, ic.X)
 				}
 			}
 		}

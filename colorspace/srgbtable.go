@@ -35,7 +35,7 @@ func (so *SRGBToOp) Init() {
 	so.Levels = 64
 	ll := so.Levels
 	llf := float32(ll)
-	so.Table.SetShape([]int{int(LMSComponentsN), so.Levels, so.Levels, so.Levels}, "N", "R", "G", "B")
+	so.Table.SetShapeSizes(int(LMSComponentsN), so.Levels, so.Levels, so.Levels)
 	// fmt.Printf("table size: %d\n", so.Table.Len())
 	for bi := 0; bi < ll; bi++ {
 		bf := float32(bi) / llf
@@ -44,17 +44,16 @@ func (so *SRGBToOp) Init() {
 			for ri := 0; ri < ll; ri++ {
 				rf := float32(ri) / llf
 				lc, mc, sc, lmc, lvm, svlm, grey := SRGBToLMSComps(rf, gf, bf)
-				so.Table.Set([]int{int(LC), ri, gi, bi}, lc)
-				so.Table.Set([]int{int(MC), ri, gi, bi}, mc)
-				so.Table.Set([]int{int(SC), ri, gi, bi}, sc)
-				so.Table.Set([]int{int(LMC), ri, gi, bi}, lmc)
-				so.Table.Set([]int{int(LvMC), ri, gi, bi}, lvm)
-				so.Table.Set([]int{int(SvLMC), ri, gi, bi}, svlm)
-				so.Table.Set([]int{int(GREY), ri, gi, bi}, grey)
+				so.Table.Set(lc, int(LC), ri, gi, bi)
+				so.Table.Set(mc, int(MC), ri, gi, bi)
+				so.Table.Set(sc, int(SC), ri, gi, bi)
+				so.Table.Set(lmc, int(LMC), ri, gi, bi)
+				so.Table.Set(lvm, int(LvMC), ri, gi, bi)
+				so.Table.Set(svlm, int(SvLMC), ri, gi, bi)
+				so.Table.Set(grey, int(GREY), ri, gi, bi)
 			}
 		}
 	}
-
 }
 
 func (so *SRGBToOp) InterpIdx(val float32) (loi, hii int, pctlo, pcthi float32) {
@@ -88,14 +87,14 @@ func (so *SRGBToOp) Lookup(r, g, b float32) (lc, mc, sc, lmc, lvm, svlm, grey fl
 	b0, b1, b0p, b1p := so.InterpIdx(b)
 
 	for i := 0; i < int(LMSComponentsN); i++ {
-		c00 := so.Table.Value([]int{i, r0, g0, b0})*r0p +
-			so.Table.Value([]int{i, r1, g0, b0})*r1p
-		c01 := so.Table.Value([]int{i, r0, g0, b1})*r0p +
-			so.Table.Value([]int{i, r1, g0, b1})*r1p
-		c10 := so.Table.Value([]int{i, r0, g1, b0})*r0p +
-			so.Table.Value([]int{i, r1, g1, b0})*r1p
-		c11 := so.Table.Value([]int{i, r0, g1, b1})*r0p +
-			so.Table.Value([]int{i, r1, g1, b1})*r1p
+		c00 := so.Table.Value(i, r0, g0, b0)*r0p +
+			so.Table.Value(i, r1, g0, b0)*r1p
+		c01 := so.Table.Value(i, r0, g0, b1)*r0p +
+			so.Table.Value(i, r1, g0, b1)*r1p
+		c10 := so.Table.Value(i, r0, g1, b0)*r0p +
+			so.Table.Value(i, r1, g1, b0)*r1p
+		c11 := so.Table.Value(i, r0, g1, b1)*r0p +
+			so.Table.Value(i, r1, g1, b1)*r1p
 		c0 := c00*g0p + c10*g1p
 		c1 := c01*g0p + c11*g1p
 		c := c0*b0p + c1*b1p

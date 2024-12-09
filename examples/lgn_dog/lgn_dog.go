@@ -9,12 +9,15 @@ package main
 import (
 	"image"
 	"log"
+	"math"
 
 	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
+	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
+	"cogentcore.org/core/tensor/tmath"
 	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/dog"
@@ -48,7 +51,7 @@ type Vis struct { //types:add
 	DoGTsr tensor.Float32 `display:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab table.Table `display:"no-inline"`
+	DoGTab table.Table `display:"-"` // `display:"no-inline"`
 
 	// current input image
 	Img image.Image `display:"-"`
@@ -62,6 +65,7 @@ type Vis struct { //types:add
 
 func (vi *Vis) Defaults() {
 	vi.ImageFile = core.Filename("side-tee-128.png")
+	vi.DoGTab.Init()
 	vi.DoG.Defaults()
 	sz := 12 // V1mF16 typically = 12, no border
 	spc := 4
@@ -74,8 +78,10 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	vi.DoGTab.Columns[1].SetMetaData("max", "0.2")
-	vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
+	// todo: grid styling
+	// plot.AddStylerTo(vi.DoGTab.Columns.Values[1], func(s *plot.Style) {
+	// 	s.Range.SetMax(0.2).SetMin(-0.2)
+	// })
 }
 
 // OpenImage opens given filename as current image Img
@@ -93,7 +99,8 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	}
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.Geom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.Geom.FiltRt.X)
-	vi.ImgTsr.SetMetaData("image", "+")
+	// todo: grid styling
+	// vi.ImgTsr.SetMetaData("image", "+") // todo
 	return nil
 }
 
@@ -103,8 +110,12 @@ func (vi *Vis) LGNDoG() {
 	flt := vi.DoG.FilterTensor(&vi.DoGTsr, dog.Net)
 	vfilter.Conv1(&vi.Geom, flt, &vi.ImgTsr, &vi.OutTsr, vi.DoG.Gain)
 	// log norm is generally good it seems for dogs
-	// todo: fixme
-	// vfilter.TensorLogNorm(&vi.OutTsr, 0) // 0 = renorm all, 1 = renorm within each on / off separately
+	n := vi.OutTsr.Len()
+	for i := range n {
+		vi.OutTsr.SetFloat1D(math.Log(vi.OutTsr.Float1D(i)+1), i)
+	}
+	mx := stats.Max(tensor.As1D(&vi.OutTsr))
+	tmath.DivOut(&vi.OutTsr, mx, &vi.OutTsr)
 }
 
 // Filter is overall method to run filters on current image file name
@@ -119,14 +130,13 @@ func (vi *Vis) Filter() error { //types:add
 	return nil
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// 		Gui
-
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("lgn_dog").SetTitle("LGN DoG Filtering")
 	core.NewForm(b).SetStruct(vi)
-	b.AddAppBar(func(p *tree.Plan) {
-		tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+	b.AddTopBar(func(bar *core.Frame) {
+		core.NewToolbar(bar).Maker(func(p *tree.Plan) {
+			tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+		})
 	})
 	b.RunMainWindow()
 	return b

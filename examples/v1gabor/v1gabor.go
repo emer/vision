@@ -13,7 +13,7 @@ import (
 	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/norm"
+	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tree"
@@ -58,7 +58,7 @@ type Vis struct { //types:add
 	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `display:"no-inline"`
+	V1sGaborTab table.Table `display:"-"` // `display:"no-inline"`
 
 	// current input image
 	Img image.Image `display:"-"`
@@ -118,9 +118,10 @@ func (vi *Vis) Defaults() {
 	vi.ImgSize = image.Point{128, 128}
 	// vi.ImgSize = image.Point{64, 64}
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
+	vi.V1sGaborTab.Init()
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
-	vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
-	vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
+	// vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
+	// vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
 }
 
 // OpenImage opens given filename as current image Img
@@ -139,7 +140,7 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.V1sGeom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
 	// vfilter.FadePad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
-	vi.ImgTsr.SetMetaData("image", "+")
+	// vi.ImgTsr.SetMetaData("image", "+")
 	return nil
 }
 
@@ -162,14 +163,14 @@ func (vi *Vis) V1Simple() {
 
 // ImgFromV1Simple reverses V1Simple Gabor filtering from V1s back to input image
 func (vi *Vis) ImgFromV1Simple() {
-	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sTsr)
+	tensor.SetShapeFrom(&vi.V1sUnPoolTsr, &vi.V1sTsr)
 	vi.V1sUnPoolTsr.SetZeros()
-	vi.ImgFromV1sTsr.CopyShapeFrom(&vi.ImgTsr)
+	tensor.SetShapeFrom(&vi.ImgFromV1sTsr, &vi.ImgTsr)
 	vi.ImgFromV1sTsr.SetZeros()
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
-	norm.Unit32(vi.ImgFromV1sTsr.Values)
-	vi.ImgFromV1sTsr.SetMetaData("image", "+")
+	stats.UnitNormOut(&vi.ImgFromV1sTsr, &vi.ImgFromV1sTsr)
+	// vi.ImgFromV1sTsr.SetMetaData("image", "+")
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.
@@ -189,8 +190,7 @@ func (vi *Vis) V1All() {
 	nx := vi.V1sPoolTsr.DimSize(1)
 	nang := vi.V1sPoolTsr.DimSize(3)
 	nrows := 5
-	oshp := []int{ny, nx, nrows, nang}
-	vi.V1AllTsr.SetShape(oshp, "Y", "X", "Polarity", "Angle")
+	vi.V1AllTsr.SetShapeSizes(ny, nx, nrows, nang)
 	// 1 length-sum
 	vfilter.FeatAgg([]int{0}, 0, &vi.V1cLenSumTsr, &vi.V1AllTsr)
 	// 2 end-stop
@@ -220,8 +220,10 @@ func (vi *Vis) Filter() error { //types:add
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("v1gabor").SetTitle("V1 Gabor Filtering")
 	core.NewForm(b).SetStruct(vi)
-	b.AddAppBar(func(p *tree.Plan) {
-		tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+	b.AddTopBar(func(bar *core.Frame) {
+		core.NewToolbar(bar).Maker(func(p *tree.Plan) {
+			tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+		})
 	})
 	b.RunMainWindow()
 	return b

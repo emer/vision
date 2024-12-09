@@ -13,7 +13,7 @@ import (
 	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/norm"
+	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tree"
@@ -73,8 +73,8 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //types:add
 	vfilter.RGBToTensor(vi.Img, &vi.Tsr, filtsz, false) // pad for filt, bot zero
 	vfilter.WrapPadRGB(&vi.Tsr, filtsz)
 	colorspace.RGBTensorToLMSComps(&vi.LMS, &vi.Tsr)
-	vi.Tsr.SetMetaData("image", "+")
-	vi.Tsr.SetMetaData("min", "0")
+	// vi.Tsr.SetMetaData("image", "+") // todo:
+	// vi.Tsr.SetMetaData("min", "0")
 	return nil
 }
 
@@ -127,10 +127,10 @@ type Vis struct { //types:add
 	V1sGaborTsr tensor.Float32 `display:"no-inline"`
 
 	// V1 simple gabor filter table (view only)
-	V1sGaborTab table.Table `display:"no-inline"`
+	V1sGaborTab table.Table `display:"-"` // `display:"no-inline"`
 
 	// V1 simple gabor filter output, per channel
-	V1s [colorspace.OpponentsN]V1sOut `display:"inline"`
+	V1s [colorspace.OpponentsN]V1sOut `display:"no-inline"`
 
 	// max over V1 simple gabor filters output tensor
 	V1sMaxTsr tensor.Float32 `display:"no-inline"`
@@ -182,9 +182,10 @@ func (vi *Vis) Defaults() {
 	vi.V1sKWTA.Defaults()
 	// vi.ImgSize = image.Point{64, 64}
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
+	vi.V1sGaborTab.Init()
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
-	vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
-	vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
+	// vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
+	// vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
 }
 
 // V1SimpleImg runs V1Simple Gabor filtering on input image
@@ -206,17 +207,17 @@ func (vi *Vis) V1SimpleImg(v1s *V1sOut, img *tensor.Float32, gain float32) {
 
 // V1Simple runs all V1Simple Gabor filtering, depending on Color
 func (vi *Vis) V1Simple() {
-	grey := vi.Img.LMS.SubSpace([]int{int(colorspace.GREY)}).(*tensor.Float32)
+	grey := vi.Img.LMS.SubSpace(int(colorspace.GREY)).(*tensor.Float32)
 	wbout := &vi.V1s[colorspace.WhiteBlack]
 	vi.V1SimpleImg(wbout, grey, 1)
-	vi.V1sMaxTsr.CopyShapeFrom(&wbout.KwtaTsr)
+	tensor.SetShapeFrom(&vi.V1sMaxTsr, &wbout.KwtaTsr)
 	vi.V1sMaxTsr.CopyFrom(&wbout.KwtaTsr)
 	if vi.Color {
 		rgout := &vi.V1s[colorspace.RedGreen]
-		rgimg := vi.Img.LMS.SubSpace([]int{int(colorspace.LvMC)}).(*tensor.Float32)
+		rgimg := vi.Img.LMS.SubSpace(int(colorspace.LvMC)).(*tensor.Float32)
 		vi.V1SimpleImg(rgout, rgimg, vi.ColorGain)
 		byout := &vi.V1s[colorspace.BlueYellow]
-		byimg := vi.Img.LMS.SubSpace([]int{int(colorspace.SvLMC)}).(*tensor.Float32)
+		byimg := vi.Img.LMS.SubSpace(int(colorspace.SvLMC)).(*tensor.Float32)
 		vi.V1SimpleImg(byout, byimg, vi.ColorGain)
 		for i, vl := range vi.V1sMaxTsr.Values {
 			rg := rgout.KwtaTsr.Values[i]
@@ -234,14 +235,14 @@ func (vi *Vis) V1Simple() {
 
 // ImgFromV1Simple reverses V1Simple Gabor filtering from V1s back to input image
 func (vi *Vis) ImgFromV1Simple() {
-	vi.V1sUnPoolTsr.CopyShapeFrom(&vi.V1sMaxTsr)
+	tensor.SetShapeFrom(&vi.V1sUnPoolTsr, &vi.V1sMaxTsr)
 	vi.V1sUnPoolTsr.SetZeros()
-	vi.ImgFromV1sTsr.SetShape(vi.Img.Tsr.Shape().Sizes[1:], "Y", "X")
+	vi.ImgFromV1sTsr.SetShapeSizes(vi.Img.Tsr.Shape().Sizes[1:]...)
 	vi.ImgFromV1sTsr.SetZeros()
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
-	norm.Unit32(vi.ImgFromV1sTsr.Values)
-	vi.ImgFromV1sTsr.SetMetaData("image", "+")
+	stats.UnitNormOut(&vi.ImgFromV1sTsr, &vi.ImgFromV1sTsr)
+	// vi.ImgFromV1sTsr.SetMetaData("image", "+") // todo
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.
@@ -264,8 +265,7 @@ func (vi *Vis) V1All() {
 	if vi.Color && vi.SepColor {
 		nrows += 4
 	}
-	oshp := []int{ny, nx, nrows, nang}
-	vi.V1AllTsr.SetShape(oshp, "Y", "X", "Polarity", "Angle")
+	vi.V1AllTsr.SetShapeSizes(ny, nx, nrows, nang)
 	// 1 length-sum
 	vfilter.FeatAgg([]int{0}, 0, &vi.V1cLenSumTsr, &vi.V1AllTsr)
 	// 2 end-stop
@@ -304,8 +304,10 @@ func (vi *Vis) Filter() error { //types:add
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("color-gabor").SetTitle("V1 Color Gabor Filtering")
 	core.NewForm(b).SetStruct(vi)
-	b.AddAppBar(func(p *tree.Plan) {
-		tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+	b.AddTopBar(func(bar *core.Frame) {
+		core.NewToolbar(bar).Maker(func(p *tree.Plan) {
+			tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+		})
 	})
 	b.RunMainWindow()
 	return b

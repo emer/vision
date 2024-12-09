@@ -88,7 +88,7 @@ func GaussDenSig(x, sig float32) float32 {
 // setting dimensions to [3][Y][X] where Y = X = Size, and
 // first one is On-filter, second is Off-filter, and third is Net On - Off
 func (gf *Filter) ToTensor(tsr *tensor.Float32) {
-	tsr.SetShape([]int{int(FiltersN), gf.Size, gf.Size}, "3", "Y", "X")
+	tsr.SetShapeSizes(int(FiltersN), gf.Size, gf.Size)
 
 	ctr := 0.5 * float32(gf.Size-1)
 	radius := float32(gf.Size) * 0.5
@@ -108,12 +108,12 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 				ong = GaussDenSig(dist, gsOn)
 				offg = GaussDenSig(dist, gsOff)
 			}
-			tsr.Set([]int{int(On), y, x}, ong)
-			tsr.Set([]int{int(Off), y, x}, offg)
+			tsr.Set(ong, int(On), y, x)
+			tsr.Set(offg, int(Off), y, x)
 			onSum += ong
 			offSum += offg
 			net := ong - offg
-			tsr.Set([]int{int(Net), y, x}, net)
+			tsr.Set(net, int(Net), y, x)
 			if net > 0 {
 				posSum += net
 			} else if net < 0 {
@@ -124,17 +124,17 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 	// renorm each half, separate components
 	for y := 0; y < gf.Size; y++ {
 		for x := 0; x < gf.Size; x++ {
-			val := tsr.Value([]int{int(Net), y, x})
+			val := tsr.Value(int(Net), y, x)
 			if val > 0 {
 				val /= posSum
 			} else if val < 0 {
 				val /= negSum
 			}
-			tsr.Set([]int{int(Net), y, x}, val)
-			on := tsr.Value([]int{int(On), y, x})
-			tsr.Set([]int{int(On), y, x}, on/onSum)
-			off := tsr.Value([]int{int(Off), y, x})
-			tsr.Set([]int{int(Off), y, x}, off/offSum)
+			tsr.Set(val, int(Net), y, x)
+			on := tsr.Value(int(On), y, x)
+			tsr.Set(on/onSum, int(On), y, x)
+			off := tsr.Value(int(Off), y, x)
+			tsr.Set(off/offSum, int(Off), y, x)
 		}
 	}
 }
@@ -145,18 +145,19 @@ func (gf *Filter) ToTensor(tsr *tensor.Float32) {
 // This is useful for display and validation purposes.
 func (gf *Filter) ToTable(tab *table.Table) {
 	tab.AddStringColumn("Version")
-	tab.AddFloat32TensorColumn("Filter", []int{int(FiltersN), gf.Size, gf.Size}, "Version", "Y", "X")
+	tab.AddFloat32Column("Filter", int(FiltersN), gf.Size, gf.Size)
 	tab.SetNumRows(3)
-	gf.ToTensor(tab.Columns[1].(*tensor.Float32))
-	tab.SetStringIndex(0, int(On), "On")
-	tab.SetStringIndex(0, int(Off), "Off")
-	tab.SetStringIndex(0, int(Net), "Net")
+	gf.ToTensor(tab.Columns.Values[1].(*tensor.Float32))
+	nm := tab.ColumnByIndex(0)
+	nm.SetString("On", int(On))
+	nm.SetString("Off", int(Off))
+	nm.SetString("Net", int(Net))
 }
 
 // FilterTensor extracts the given filter subspace from set of 3 filters in input tensor
 // 0 = On, 1 = Off, 2 = Net
 func (gf *Filter) FilterTensor(tsr *tensor.Float32, filt Filters) *tensor.Float32 {
-	return tsr.SubSpace([]int{int(filt)}).(*tensor.Float32)
+	return tsr.SubSpace(int(filt)).(*tensor.Float32)
 }
 
 // Filters is the type of filter

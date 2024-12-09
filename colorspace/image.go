@@ -29,20 +29,20 @@ func RGBImgToLMSComps(img image.Image, tsr *tensor.Float32, padWidth int, topZer
 func RGBTensorToLMSComps(tsr *tensor.Float32, rgb *tensor.Float32) {
 	sy := rgb.DimSize(1)
 	sx := rgb.DimSize(2)
-	tsr.SetShape([]int{int(LMSComponentsN), sy, sx}, "LMS", "Y", "X")
+	tsr.SetShapeSizes(int(LMSComponentsN), sy, sx)
 	for y := 0; y < sy; y++ {
 		for x := 0; x < sx; x++ {
-			r := rgb.Value([]int{0, y, x})
-			g := rgb.Value([]int{1, y, x})
-			b := rgb.Value([]int{2, y, x})
+			r := rgb.Value(0, y, x)
+			g := rgb.Value(1, y, x)
+			b := rgb.Value(2, y, x)
 			lc, mc, sc, lmc, lvm, svlm, grey := SRGBToLMSComps(r, g, b)
-			tsr.Set([]int{int(LC), y, x}, lc)
-			tsr.Set([]int{int(MC), y, x}, mc)
-			tsr.Set([]int{int(SC), y, x}, sc)
-			tsr.Set([]int{int(LMC), y, x}, lmc)
-			tsr.Set([]int{int(LvMC), y, x}, lvm)
-			tsr.Set([]int{int(SvLMC), y, x}, svlm)
-			tsr.Set([]int{int(GREY), y, x}, grey)
+			tsr.Set(lc, int(LC), y, x)
+			tsr.Set(mc, int(MC), y, x)
+			tsr.Set(sc, int(SC), y, x)
+			tsr.Set(lmc, int(LMC), y, x)
+			tsr.Set(lvm, int(LvMC), y, x)
+			tsr.Set(svlm, int(SvLMC), y, x)
+			tsr.Set(grey, int(GREY), y, x)
 		}
 	}
 }

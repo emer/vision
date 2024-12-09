@@ -58,7 +58,7 @@ type Vis struct { //types:add
 	DoGTsr tensor.Float32 `display:"no-inline"`
 
 	// DoG filter table (view only)
-	DoGTab table.Table `display:"no-inline"`
+	DoGTab table.Table `display:"-"` // `display:"no-inline"`
 
 	// current input image
 	Img image.Image `display:"-"`
@@ -99,9 +99,10 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{128, 128}
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
+	vi.DoGTab.Init()
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	vi.DoGTab.Columns[1].SetMetaData("max", "0.2")
-	vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
+	// vi.DoGTab.Columns[1].SetMetaData("max", "0.2") // todo
+	// vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
 	vi.OutTsrs = make(map[string]*tensor.Float32)
 }
 
@@ -114,7 +115,7 @@ func (vi *Vis) OutTsr(name string) *tensor.Float32 {
 	if !ok {
 		tsr = &tensor.Float32{}
 		vi.OutTsrs[name] = tsr
-		tsr.SetMetaData("grid-fill", "1")
+		// tsr.SetMetaData("grid-fill", "1")
 	}
 	return tsr
 }
@@ -134,8 +135,8 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	vfilter.RGBToTensor(vi.Img, &vi.ImgTsr, vi.Geom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPadRGB(&vi.ImgTsr, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
-	vi.ImgTsr.SetMetaData("image", "+")
-	vi.ImgTsr.SetMetaData("min", "0")
+	// vi.ImgTsr.SetMetaData("image", "+")
+	// vi.ImgTsr.SetMetaData("min", "0")
 	return nil
 }
 
@@ -143,8 +144,8 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 func (vi *Vis) OpenMacbeth() error {
 	colorspace.MacbethImage(&vi.ImgTsr, vi.ImgSize.X, vi.ImgSize.Y, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
-	vi.ImgTsr.SetMetaData("image", "+")
-	vi.ImgTsr.SetMetaData("min", "0")
+	// vi.ImgTsr.SetMetaData("image", "+")
+	// vi.ImgTsr.SetMetaData("min", "0")
 	img := &image.RGBA{}
 	img = vfilter.RGBTensorToImage(img, &vi.ImgTsr, 0, false)
 	vi.Img = img
@@ -160,25 +161,25 @@ func (vi *Vis) OpenMacbeth() error {
 // ColorDoG runs color contrast DoG filtering on input image
 // must have valid Img in place to start.
 func (vi *Vis) ColorDoG() {
-	rimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LC)}).(*tensor.Float32)
-	gimg := vi.ImgLMS.SubSpace([]int{int(colorspace.MC)}).(*tensor.Float32)
-	rimg.SetMetaData("grid-fill", "1")
-	gimg.SetMetaData("grid-fill", "1")
+	rimg := vi.ImgLMS.SubSpace(int(colorspace.LC)).(*tensor.Float32)
+	gimg := vi.ImgLMS.SubSpace(int(colorspace.MC)).(*tensor.Float32)
+	// rimg.SetMetaData("grid-fill", "1")
+	// gimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Red"] = rimg
 	vi.OutTsrs["Green"] = gimg
 
-	bimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SC)}).(*tensor.Float32)
-	yimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LMC)}).(*tensor.Float32)
-	bimg.SetMetaData("grid-fill", "1")
-	yimg.SetMetaData("grid-fill", "1")
+	bimg := vi.ImgLMS.SubSpace(int(colorspace.SC)).(*tensor.Float32)
+	yimg := vi.ImgLMS.SubSpace(int(colorspace.LMC)).(*tensor.Float32)
+	// bimg.SetMetaData("grid-fill", "1")
+	// yimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue"] = bimg
 	vi.OutTsrs["Yellow"] = yimg
 
 	// for display purposes only:
-	byimg := vi.ImgLMS.SubSpace([]int{int(colorspace.SvLMC)}).(*tensor.Float32)
-	rgimg := vi.ImgLMS.SubSpace([]int{int(colorspace.LvMC)}).(*tensor.Float32)
-	byimg.SetMetaData("grid-fill", "1")
-	rgimg.SetMetaData("grid-fill", "1")
+	byimg := vi.ImgLMS.SubSpace(int(colorspace.SvLMC)).(*tensor.Float32)
+	rgimg := vi.ImgLMS.SubSpace(int(colorspace.LvMC)).(*tensor.Float32)
+	// byimg.SetMetaData("grid-fill", "1")
+	// rgimg.SetMetaData("grid-fill", "1")
 	vi.OutTsrs["Blue-Yellow"] = byimg
 	vi.OutTsrs["Red-Green"] = rgimg
 
@@ -208,9 +209,8 @@ func (vi *Vis) AggAll() {
 	otsr := vi.OutTsr("DoG_" + vi.DoGNames[0] + "_Red-Green")
 	ny := otsr.DimSize(1)
 	nx := otsr.DimSize(2)
-	oshp := []int{ny, nx, 2, 2 * len(vi.DoGNames)}
-	vi.OutAll.SetShape(oshp, "Y", "X", "OnOff", "RGBY")
-	vi.OutAll.SetMetaData("grid-fill", "1")
+	vi.OutAll.SetShapeSizes(ny, nx, 2, 2*len(vi.DoGNames))
+	// vi.OutAll.SetMetaData("grid-fill", "1")
 	for i, nm := range vi.DoGNames {
 		rgtsr := vi.OutTsr("DoG_" + nm + "_Red-Green")
 		bytsr := vi.OutTsr("DoG_" + nm + "_Blue-Yellow")
@@ -246,8 +246,10 @@ func (vi *Vis) Filter() error { //types:add
 func (vi *Vis) ConfigGUI() *core.Body {
 	b := core.NewBody("colordog").SetTitle("Color DoGFiltering")
 	core.NewForm(b).SetStruct(vi)
-	b.AddAppBar(func(p *tree.Plan) {
-		tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+	b.AddTopBar(func(bar *core.Frame) {
+		core.NewToolbar(bar).Maker(func(p *tree.Plan) {
+			tree.Add(p, func(w *core.FuncButton) { w.SetFunc(vi.Filter) })
+		})
 	})
 	b.RunMainWindow()
 	return b
