@@ -14,7 +14,7 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/table"
-	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
+	"cogentcore.org/core/tensor/tensorcore"
 	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/emer/vision/v2/colorspace"
@@ -101,9 +101,19 @@ func (vi *Vis) Defaults() {
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoGTab.Init()
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	// vi.DoGTab.Columns[1].SetMetaData("max", "0.2") // todo
-	// vi.DoGTab.Columns[1].SetMetaData("min", "-0.2")
+	tensorcore.AddGridStylerTo(vi.DoGTab.Columns.Values[1], func(s *tensorcore.GridStyle) {
+		s.Size.Min = 16
+		s.Range.Set(-0.01, 0.01)
+	})
 	vi.OutTsrs = make(map[string]*tensor.Float32)
+	tensorcore.AddGridStylerTo(&vi.ImgTsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
+	tensorcore.AddGridStylerTo(&vi.ImgLMS, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
 }
 
 // OutTsr gets output tensor of given name, creating if not yet made
@@ -115,7 +125,9 @@ func (vi *Vis) OutTsr(name string) *tensor.Float32 {
 	if !ok {
 		tsr = &tensor.Float32{}
 		vi.OutTsrs[name] = tsr
-		// tsr.SetMetaData("grid-fill", "1")
+		tensorcore.AddGridStylerTo(tsr, func(s *tensorcore.GridStyle) {
+			s.GridFill = 1
+		})
 	}
 	return tsr
 }
@@ -135,8 +147,6 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	vfilter.RGBToTensor(vi.Img, &vi.ImgTsr, vi.Geom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPadRGB(&vi.ImgTsr, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
-	// vi.ImgTsr.SetMetaData("image", "+")
-	// vi.ImgTsr.SetMetaData("min", "0")
 	return nil
 }
 
@@ -144,8 +154,6 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 func (vi *Vis) OpenMacbeth() error {
 	colorspace.MacbethImage(&vi.ImgTsr, vi.ImgSize.X, vi.ImgSize.Y, vi.Geom.FiltRt.X)
 	colorspace.RGBTensorToLMSComps(&vi.ImgLMS, &vi.ImgTsr)
-	// vi.ImgTsr.SetMetaData("image", "+")
-	// vi.ImgTsr.SetMetaData("min", "0")
 	img := &image.RGBA{}
 	img = vfilter.RGBTensorToImage(img, &vi.ImgTsr, 0, false)
 	vi.Img = img
@@ -163,23 +171,35 @@ func (vi *Vis) OpenMacbeth() error {
 func (vi *Vis) ColorDoG() {
 	rimg := vi.ImgLMS.SubSpace(int(colorspace.LC)).(*tensor.Float32)
 	gimg := vi.ImgLMS.SubSpace(int(colorspace.MC)).(*tensor.Float32)
-	// rimg.SetMetaData("grid-fill", "1")
-	// gimg.SetMetaData("grid-fill", "1")
+	tensorcore.AddGridStylerTo(rimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
+	tensorcore.AddGridStylerTo(gimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
 	vi.OutTsrs["Red"] = rimg
 	vi.OutTsrs["Green"] = gimg
 
 	bimg := vi.ImgLMS.SubSpace(int(colorspace.SC)).(*tensor.Float32)
 	yimg := vi.ImgLMS.SubSpace(int(colorspace.LMC)).(*tensor.Float32)
-	// bimg.SetMetaData("grid-fill", "1")
-	// yimg.SetMetaData("grid-fill", "1")
+	tensorcore.AddGridStylerTo(bimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
+	tensorcore.AddGridStylerTo(yimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
 	vi.OutTsrs["Blue"] = bimg
 	vi.OutTsrs["Yellow"] = yimg
 
 	// for display purposes only:
 	byimg := vi.ImgLMS.SubSpace(int(colorspace.SvLMC)).(*tensor.Float32)
 	rgimg := vi.ImgLMS.SubSpace(int(colorspace.LvMC)).(*tensor.Float32)
-	// byimg.SetMetaData("grid-fill", "1")
-	// rgimg.SetMetaData("grid-fill", "1")
+	tensorcore.AddGridStylerTo(byimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
+	tensorcore.AddGridStylerTo(rgimg, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
 	vi.OutTsrs["Blue-Yellow"] = byimg
 	vi.OutTsrs["Red-Green"] = rgimg
 
@@ -210,7 +230,9 @@ func (vi *Vis) AggAll() {
 	ny := otsr.DimSize(1)
 	nx := otsr.DimSize(2)
 	vi.OutAll.SetShapeSizes(ny, nx, 2, 2*len(vi.DoGNames))
-	// vi.OutAll.SetMetaData("grid-fill", "1")
+	tensorcore.AddGridStylerTo(&vi.OutAll, func(s *tensorcore.GridStyle) {
+		s.GridFill = 1
+	})
 	for i, nm := range vi.DoGNames {
 		rgtsr := vi.OutTsr("DoG_" + nm + "_Red-Green")
 		bytsr := vi.OutTsr("DoG_" + nm + "_Blue-Yellow")
