@@ -15,6 +15,7 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensorcore"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
@@ -73,8 +74,10 @@ func (vi *V1Img) OpenImage(filepath string, filtsz int) error { //types:add
 	vfilter.RGBToTensor(vi.Img, &vi.Tsr, filtsz, false) // pad for filt, bot zero
 	vfilter.WrapPadRGB(&vi.Tsr, filtsz)
 	colorspace.RGBTensorToLMSComps(&vi.LMS, &vi.Tsr)
-	// vi.Tsr.SetMetaData("image", "+") // todo:
-	// vi.Tsr.SetMetaData("min", "0")
+	tensorcore.AddGridStylerTo(&vi.Tsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
 	return nil
 }
 
@@ -184,8 +187,13 @@ func (vi *Vis) Defaults() {
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
 	vi.V1sGaborTab.Init()
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
-	// vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
-	// vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
+	tensorcore.AddGridStylerTo(&vi.V1sGaborTab, func(s *tensorcore.GridStyle) {
+		s.Size.Min = 16
+		s.Range.Set(-0.05, 0.05)
+	})
+	tensorcore.AddGridStylerTo(&vi.ImgFromV1sTsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+	})
 }
 
 // V1SimpleImg runs V1Simple Gabor filtering on input image
@@ -242,7 +250,6 @@ func (vi *Vis) ImgFromV1Simple() {
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
 	stats.UnitNormOut(&vi.ImgFromV1sTsr, &vi.ImgFromV1sTsr)
-	// vi.ImgFromV1sTsr.SetMetaData("image", "+") // todo
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.

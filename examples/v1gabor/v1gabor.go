@@ -15,6 +15,7 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensorcore"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
@@ -120,8 +121,18 @@ func (vi *Vis) Defaults() {
 	vi.V1sGabor.ToTensor(&vi.V1sGaborTsr)
 	vi.V1sGaborTab.Init()
 	vi.V1sGabor.ToTable(&vi.V1sGaborTab) // note: view only, testing
-	// vi.V1sGaborTab.Columns[1].SetMetaData("max", "0.05")
-	// vi.V1sGaborTab.Columns[1].SetMetaData("min", "-0.05")
+	tensorcore.AddGridStylerTo(&vi.ImgTsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
+	tensorcore.AddGridStylerTo(&vi.ImgFromV1sTsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
+	tensorcore.AddGridStylerTo(&vi.V1sGaborTab, func(s *tensorcore.GridStyle) {
+		s.Size.Min = 16
+		s.Range.Set(-0.05, 0.05)
+	})
 }
 
 // OpenImage opens given filename as current image Img
@@ -139,8 +150,6 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	}
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.V1sGeom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
-	// vfilter.FadePad(&vi.ImgTsr, vi.V1sGeom.FiltRt.X)
-	// vi.ImgTsr.SetMetaData("image", "+")
 	return nil
 }
 
@@ -170,7 +179,6 @@ func (vi *Vis) ImgFromV1Simple() {
 	vfilter.UnPool(image.Point{2, 2}, image.Point{2, 2}, &vi.V1sUnPoolTsr, &vi.V1sPoolTsr, true)
 	vfilter.Deconv(&vi.V1sGeom, &vi.V1sGaborTsr, &vi.ImgFromV1sTsr, &vi.V1sUnPoolTsr, vi.V1sGabor.Gain)
 	stats.UnitNormOut(&vi.ImgFromV1sTsr, &vi.ImgFromV1sTsr)
-	// vi.ImgFromV1sTsr.SetMetaData("image", "+")
 }
 
 // V1Complex runs V1 complex filters on top of V1Simple features.

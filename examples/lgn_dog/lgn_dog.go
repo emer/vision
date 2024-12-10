@@ -16,6 +16,7 @@ import (
 	"cogentcore.org/core/tensor"
 	"cogentcore.org/core/tensor/stats/stats"
 	"cogentcore.org/core/tensor/table"
+	"cogentcore.org/core/tensor/tensorcore"
 	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tensor/tmath"
 	"cogentcore.org/core/tree"
@@ -78,10 +79,14 @@ func (vi *Vis) Defaults() {
 	// vi.ImgSize = image.Point{64, 64}
 	vi.DoG.ToTensor(&vi.DoGTsr)
 	vi.DoG.ToTable(&vi.DoGTab) // note: view only, testing
-	// todo: grid styling
-	// plot.AddStylerTo(vi.DoGTab.Columns.Values[1], func(s *plot.Style) {
-	// 	s.Range.SetMax(0.2).SetMin(-0.2)
-	// })
+	tensorcore.AddGridStylerTo(&vi.ImgTsr, func(s *tensorcore.GridStyle) {
+		s.Image = true
+		s.Range.SetMin(0)
+	})
+	tensorcore.AddGridStylerTo(&vi.DoGTab, func(s *tensorcore.GridStyle) {
+		s.Size.Min = 16
+		s.Range.Set(-0.1, 0.1)
+	})
 }
 
 // OpenImage opens given filename as current image Img
@@ -99,8 +104,6 @@ func (vi *Vis) OpenImage(filepath string) error { //types:add
 	}
 	vfilter.RGBToGrey(vi.Img, &vi.ImgTsr, vi.Geom.FiltRt.X, false) // pad for filt, bot zero
 	vfilter.WrapPad(&vi.ImgTsr, vi.Geom.FiltRt.X)
-	// todo: grid styling
-	// vi.ImgTsr.SetMetaData("image", "+") // todo
 	return nil
 }
 
