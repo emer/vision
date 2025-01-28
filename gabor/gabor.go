@@ -14,8 +14,8 @@ import (
 	"math"
 
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/table"
 )
 
 // gabor.Filter specifies a gabor filter function,

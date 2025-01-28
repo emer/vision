@@ -12,8 +12,8 @@ package dog
 
 import (
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/table"
 )
 
 // dog.Filter specifies a DoG Difference of Gaussians filter function.

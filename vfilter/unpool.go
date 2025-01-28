@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"sync"
 
-	"cogentcore.org/core/tensor"
+	"github.com/emer/etensor/tensor"
 	"github.com/emer/vision/v2/nproc"
 )
 

@@ -8,9 +8,9 @@ import (
 	"math"
 
 	"cogentcore.org/core/math32"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/stats/norm"
-	"cogentcore.org/core/tensor/stats/stats"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/stats/norm"
+	"github.com/emer/etensor/tensor/stats/stats"
 )
 
 // TensorLogNorm computes 1 + log of all the numbers and then does

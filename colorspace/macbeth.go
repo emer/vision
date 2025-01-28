@@ -6,7 +6,7 @@ package colorspace
 
 import (
 	"cogentcore.org/core/math32/vecint"
-	"cogentcore.org/core/tensor"
+	"github.com/emer/etensor/tensor"
 )
 
 // MacbethImage sets the Macbeth standard color test image to given tensor

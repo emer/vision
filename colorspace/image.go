@@ -7,7 +7,7 @@ package colorspace
 import (
 	"image"
 
-	"cogentcore.org/core/tensor"
+	"github.com/emer/etensor/tensor"
 	"github.com/emer/vision/v2/vfilter"
 )
 

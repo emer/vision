@@ -12,11 +12,11 @@ import (
 
 	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/core"
-	"cogentcore.org/core/tensor"
-	"cogentcore.org/core/tensor/table"
-	_ "cogentcore.org/core/tensor/tensorcore" // include to get gui views
 	"cogentcore.org/core/tree"
 	"github.com/anthonynsimon/bild/transform"
+	"github.com/emer/etensor/tensor"
+	"github.com/emer/etensor/tensor/table"
+	_ "github.com/emer/etensor/tensor/tensorcore" // include to get gui views
 	"github.com/emer/vision/v2/dog"
 	"github.com/emer/vision/v2/vfilter"
 )

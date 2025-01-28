@@ -8,7 +8,7 @@ import (
 	"image"
 	"log"
 
-	"cogentcore.org/core/tensor"
+	"github.com/emer/etensor/tensor"
 )
 
 // Deconv performs reverse convolution of filter -- given output of filter,
